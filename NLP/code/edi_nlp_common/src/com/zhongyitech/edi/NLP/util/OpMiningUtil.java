@@ -1,4 +1,4 @@
-package com.zhongyitech.edi.NLP.util;
+package omsaTest.util;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -7,21 +7,24 @@ import java.util.Map;
 
 import org.ansj.domain.Term;
 import org.ansj.splitWord.analysis.ToAnalysis;
+import org.ansj.util.FilterModifWord;
 
-import com.zhongyitech.edi.NLP.model.OpAspElement;
-import com.zhongyitech.edi.NLP.model.OpElement;
-import com.zhongyitech.edi.NLP.model.OpSentiElement;
-import com.zhongyitech.edi.NLP.model.OpTreeNode;
-import com.zhongyitech.edi.NLP.model.Opinion;
+import com.ansj.vec.Word2VEC;
+
+import omsaTest.model.OpAspElement;
+import omsaTest.model.OpElement;
+import omsaTest.model.OpSentiElement;
+import omsaTest.model.OpTreeNode;
+import omsaTest.model.Opinion;
 
 public class OpMiningUtil {
 	/*
 	 * dicts... 0品牌词 1对象词 2属性词 3正面词 4负面词 5否定词
 	 */
 	private static String[] dicts = {"dicts/dict0.txt","dicts/dict1.txt","dicts/dict2.txt","dicts/dict3.txt","dicts/dict4.txt","dicts/dict5.txt"};
-	private static String corpus = "corpus/w2vTrainSet.txt";
 	private static String category = "dicts/categoryDicts.txt";
-	
+	private static String corpus = "corpus/w2vTrainSet.txt";
+	private static String stpwdict = "dicts/stopWordDict.txt";
 	//用于标注前两个词在观点树中的层次
 	private static int[] lastTermLevel = {0,0};
 	
@@ -36,22 +39,33 @@ public class OpMiningUtil {
 	}
 	
 	public static List<Opinion> doSa(String words,String product) throws Exception{
-		String w2vMap = "corpus/w2vMap.txt";
-		
 		String words1 = preTreatWords(words);
-		List<Term> list1 = ToAnalysis.parse(words1);
-		List<String> cateDict = DictMakeUtil.makeCateDict(category);
-		String[] dict = DictMakeUtil.makeOpDict(dicts);//观点分类词典读取
+		
+		List<String> cateDict = DictMakeUtil.makeCateDict(category);//观点分类词典读取
+		String[] dict = DictMakeUtil.makeOpDict(dicts);//观点元素词典
 		DictMakeUtil.modifyDict(dict,"/");//分词词典
 		DictMakeUtil.modifyDict(cateDict);//分词词典
-		List<Opinion> oplist = OpMiningUtil.opMining(words, dict ,list1, product);//观点提取
-		W2vUtil.word2vecMap(w2vMap);//观点对象分类map读取
-		oplist = OpMiningUtil.aspectCategory(oplist,cateDict,w2vMap);//观点对象分类
+		
+		List<Term> list1 = ToAnalysis.parse(words1);
+		
+		setStopWord(stpwdict);
+		List<Term> list = FilterModifWord.modifResult(list1);//去停用词
+		List<Opinion> oplist = OpMiningUtil.opMining(words, dict ,list, product);//观点提取
+		oplist = OpMiningUtil.aspectCategory(oplist,cateDict);//观点对象分类
 		return oplist;
 	}
 	
-	//预处理
-	private static String preTreatWords(String words) {
+	private static void setStopWord(String stw) throws Exception {
+
+		String str = IoUtil.readTxt(stpwdict);
+		String[] ss = str.split("\n");
+		for(String s : ss){
+			FilterModifWord.insertStopWord(s);
+		}
+	}
+	
+	// 预处理
+	public static String preTreatWords(String words) {
 //		String words1 = words.replaceAll("、","#顿号#");
 		String words1 = words.replaceAll(" ",".");
 //		words1 = words1.replaceAll("，","#逗号#");
@@ -61,7 +75,10 @@ public class OpMiningUtil {
 		return words1;
 	}
 	
-	//观点提取
+	// 去停用词
+	
+	
+	// 观点提取
 	public static List<Opinion> opMining(String w, String[] dict, List<Term> list, String p){
 		
 		List<OpTreeNode> opTree = opTreeConstruct(w,dict,list,p);
@@ -69,7 +86,7 @@ public class OpMiningUtil {
 		
 	}
 	
-	//情感分析
+	// 情感分析
 	private static List<Opinion> sentimentAnalysis(String[] dict, List<Opinion> opExtract) {
 		
 		for(Opinion op : opExtract){
@@ -79,7 +96,7 @@ public class OpMiningUtil {
 		return opExtract;
 	}
 
-	//从观点树提取观点
+	// 从观点树提取观点
 	private static List<Opinion> opExtract(String w, List<Term> list, String[] dict, List<OpTreeNode> opTree) {
 		
 		StringBuffer s = new StringBuffer();
@@ -127,7 +144,6 @@ public class OpMiningUtil {
 	}
 	
 	private static Opinion setOpinion(Opinion op, OpTreeNode n) {
-		// TODO Auto-generated method stub
 		switch (n.getNode_depth()){
 			case 1:
 				op.setProduct(n.getNode_element());
@@ -145,7 +161,7 @@ public class OpMiningUtil {
 		return op;
 	}
 	
-	//观点树构造,按照规则.
+	// 观点树构造,按照规则.
 	public static List<OpTreeNode> opTreeConstruct(String w, String[] dict, List<Term> list, String p) {
 
 		StringBuffer s = new StringBuffer();
@@ -412,6 +428,7 @@ public class OpMiningUtil {
 		return opTree;
 	}
 
+	//
 	private static void editAll(OpElement e, List<OpElement> list, String string, int treeIndex, List<OpTreeNode> opTree ) {
 		int t = 0;
 		while(t<list.size()){
@@ -423,11 +440,13 @@ public class OpMiningUtil {
 		return;
 	}
 
+	//判断是否是比较
 	private static boolean isComp() {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
+	//判断是否是并列
 	private static boolean isPara(String[] seg, int j, int level) {
 		if(j==0)
 			return false;
@@ -435,13 +454,14 @@ public class OpMiningUtil {
 		if (tempsplit.length == 2){
 			String temp = tempsplit[0].replaceAll("[，。,.^/ ]", ",");
 //			return tempsplit[1].equals("c") || tempsplit[1].equals("wn")  || temp.equals(",");
-			return tempsplit[1].equals("c") || ((tempsplit[1].equals("wn")  || temp.equals(","))&& (lastTermLevel[0]!=4 || lastTermLevel[1]!=4));
+			return tempsplit[1].equals("cc") || tempsplit[1].equals("c") || ((tempsplit[1].equals("wn")  || temp.equals(","))&& (lastTermLevel[0]!=4 || lastTermLevel[1]!=4));
 		}else{
 //			System.out.println("判断并列失败：上一个分词结果异常");
 			return false;
 		}
 	}
 
+	//
 	private static Map<String, Integer> setSaValueMap(String mydict, String category, String savaluepath) {
 
 		Map<String, Integer> resultMap = new HashMap<String, Integer>();
@@ -455,14 +475,14 @@ public class OpMiningUtil {
 		}
 		return resultMap;
 	}
-
-	public static List<Opinion> aspectCategory(List<Opinion> oplist, List<String> cateDict, String w2vMap)
+	
+	// 评论对象分类
+	public static List<Opinion> aspectCategory(List<Opinion> oplist, List<String> cateDict)
 			throws Exception {
 
-		Map<String, float[]> map = new HashMap<String, float[]>();
-		// m1
-		map = W2vUtil.setW2vMap(w2vMap);
-
+		Word2VEC w2v = new Word2VEC();
+	    w2v.loadJavaModel("model/vector.mod");
+		
 		List<Opinion> resultlist = new ArrayList<Opinion>();
 		for (Opinion op : oplist) {
 //			float maxd = 999999;
@@ -473,10 +493,10 @@ public class OpMiningUtil {
 				float temp = 0;
 				if(op.getAspect().getContent()==null){
 					//如果空,给属性分类
-					temp = W2vUtil.dist(map.get(op.getAttribute().getContent()), map.get(cateDict.get(i)));
+					temp = W2vUtil.dist(w2v.getWordVector(op.getAttribute().getContent()), w2v.getWordVector(cateDict.get(i)));
 				}else{
 					//给对象分类
-					temp = W2vUtil.dist(map.get(op.getAspect().getContent()), map.get(cateDict.get(i)));
+					temp = W2vUtil.dist(w2v.getWordVector(op.getAspect().getContent()), w2v.getWordVector(cateDict.get(i)));
 				}
 //				boolean b = temp < maxd;
 				if(temp > similarity){

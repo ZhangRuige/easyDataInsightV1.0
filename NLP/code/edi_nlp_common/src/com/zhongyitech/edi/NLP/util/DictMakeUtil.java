@@ -1,4 +1,4 @@
-package com.zhongyitech.edi.NLP.util;
+package omsaTest.util;
 
 import java.util.ArrayList;
 import java.util.List;

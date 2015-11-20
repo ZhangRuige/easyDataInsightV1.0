@@ -1,4 +1,4 @@
-package com.zhongyitech.edi.NLP.util;
+package omsaTest.util;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -19,44 +19,44 @@ import com.ansj.vec.Word2VEC;
 
 public class W2vUtil {
 	
-	private static Map<String, float[]> word2VecMap = new HashMap<String, float[]>();
-	
-	public static Map<String, float[]> setW2vMap(String w2vMap) throws Exception {
-		
-		if(word2VecMap.size()>0){
-			return word2VecMap;
-		}else{
-			InputStreamReader read = new InputStreamReader(new FileInputStream(w2vMap), "utf-8");
-			BufferedReader br = new BufferedReader(read);
-			String str = null;
-			while((str=br.readLine())!=null){
-				String[] s = str.split("\t");
-				if(s[0]==null || s.length!=2 || s[1].equals("null") || s[1]==null)
-					continue;
-				else{
-					try{
-						float[] f = toFloatArray(s[1]);
-						word2VecMap.put(s[0], f);
-					}catch (Exception e){
-						System.out.println(s[1]);
-					}
-				}
-			}
-			return word2VecMap;
-		}
-	}
-
-	private static float[] toFloatArray(String value) {
-		
-		String[] s = value.split(",");
-		float[] f = new float[s.length];
-		
-		for(int i = 0; i<s.length; i++){
-			f[i] = Float.parseFloat(s[i]);
-		}
-		
-		return f;
-	}
+//	private static Map<String, float[]> word2VecMap = new HashMap<String, float[]>();
+//	
+//	public static Map<String, float[]> setW2vMap(String w2vMap) throws Exception {
+//		
+//		if(word2VecMap.size()>0){
+//			return word2VecMap;
+//		}else{
+//			InputStreamReader read = new InputStreamReader(new FileInputStream(w2vMap), "utf-8");
+//			BufferedReader br = new BufferedReader(read);
+//			String str = null;
+//			while((str=br.readLine())!=null){
+//				String[] s = str.split("\t");
+//				if(s[0]==null || s.length!=2 || s[1].equals("null") || s[1]==null)
+//					continue;
+//				else{
+//					try{
+//						float[] f = toFloatArray(s[1]);
+//						word2VecMap.put(s[0], f);
+//					}catch (Exception e){
+//						System.out.println(s[1]);
+//					}
+//				}
+//			}
+//			return word2VecMap;
+//		}
+//	}
+//
+//	private static float[] toFloatArray(String value) {
+//		
+//		String[] s = value.split(",");
+//		float[] f = new float[s.length];
+//		
+//		for(int i = 0; i<s.length; i++){
+//			f[i] = Float.parseFloat(s[i]);
+//		}
+//		
+//		return f;
+//	}
 
 	public static float dist(float[] fs, float[] fs2) {
 		if(fs2 == null)
@@ -100,51 +100,52 @@ public class W2vUtil {
 //		return result;
 	}
 
-	public static void word2vecMap(String vecPath) throws Exception{
-		String path = "corpus/cwsFile.txt";
-		String str = IoUtil.readTxt(path);
-		Word2VEC w2v = new Word2VEC();
-	    w2v.loadJavaModel("model/vector.mod");
-	    
-	    String[] words = str.split(" ");
-//	    Map<String, float[]> result = new HashMap<String, float[]>();
+//	// 词向量写出来,无意义
+//	public static void word2vecMap(String vecPath) throws Exception{
+//		String path = "corpus/cwsFile.txt";
+//		String str = IoUtil.readTxt(path);
+//		Word2VEC w2v = new Word2VEC();
+//	    w2v.loadJavaModel("model/vector.mod");
+//	    
+//	    String[] words = str.split(" ");
+////	    Map<String, float[]> result = new HashMap<String, float[]>();
+//
+//	    OutputStreamWriter w = new OutputStreamWriter(new FileOutputStream(vecPath),"UTF-8");
+//		BufferedWriter bw=new BufferedWriter(w);
+//	    
+//	    for(int i = 0;i<words.length;i++){
+//	    	StringBuffer sb = new StringBuffer();
+//	    	float[] f = w2v.getWordVector(words[i]);
+//	    	
+//	    	if(word2VecMap.get(words[i])==null){
+//		    	word2VecMap.put(words[i], f);
+//		    	sb.append(words[i]);
+//		    	sb.append("\t");
+//		    	appendFloatArray(sb,f);
+//		    	sb.append("\r\n");
+//		    	bw.write(sb.toString());
+//	    	}
+//	    }
+//	}
+//	
+//	private static void appendFloatArray(StringBuffer sb, float[] f) {
+//		if(f!=null){
+////			sb.append("[");
+//			for(int i=0;i<f.length-1;i++){
+//				sb.append(f[i]);
+//				sb.append(",");
+//			}
+//			sb.append(f[f.length-1]);
+////			sb.append("]");
+//		}else
+//			sb.append(f);
+//	}
 
-	    OutputStreamWriter w = new OutputStreamWriter(new FileOutputStream(vecPath),"UTF-8");
-		BufferedWriter bw=new BufferedWriter(w);
-	    
-	    for(int i = 0;i<words.length;i++){
-	    	StringBuffer sb = new StringBuffer();
-	    	float[] f = w2v.getWordVector(words[i]);
-	    	
-	    	if(word2VecMap.get(words[i])==null){
-		    	word2VecMap.put(words[i], f);
-		    	sb.append(words[i]);
-		    	sb.append("\t");
-		    	appendFloatArray(sb,f);
-		    	sb.append("\r\n");
-		    	bw.write(sb.toString());
-	    	}
-	    }
-	}
-	
-	private static void appendFloatArray(StringBuffer sb, float[] f) {
-		if(f!=null){
-//			sb.append("[");
-			for(int i=0;i<f.length-1;i++){
-				sb.append(f[i]);
-				sb.append(",");
-			}
-			sb.append(f[f.length-1]);
-//			sb.append("]");
-		}else
-			sb.append(f);
-	}
-
-	public static Map<String, float[]> getWord2VecMap() {
-		return word2VecMap;
-	}
-
-	public static void setWord2VecMap(Map<String, float[]> word2VecMap) {
-		W2vUtil.word2VecMap = word2VecMap;
-	}
+//	public static Map<String, float[]> getWord2VecMap() {
+//		return word2VecMap;
+//	}
+//
+//	public static void setWord2VecMap(Map<String, float[]> word2VecMap) {
+//		W2vUtil.word2VecMap = word2VecMap;
+//	}
 }
