@@ -6,6 +6,7 @@ import java.util.List;
 import org.ansj.domain.Term;
 import org.ansj.splitWord.analysis.ToAnalysis;
 
+import com.ansj.vec.Word2VEC;
 import com.zhongyitech.edi.NLP.model.CRFTag;
 
 public class CRFsUtil {
@@ -14,6 +15,8 @@ public class CRFsUtil {
 	private static String category = "dicts/categoryDicts.txt";
 	
 	private static int cross_validate_k = 10;
+	// 相似度阈值
+	private static float sim = (float) 0.35 ;
 	
 	/* CRF过程
 	 * 
@@ -29,6 +32,8 @@ public class CRFsUtil {
 	 * 8.筛选判断
 	 * 9.更新词典
 	 */
+	
+	// 分割数据形成训练集
 	public static List<String> getTrainData(String string) throws Exception{
 		List<String> result = new ArrayList<String>();
 		
@@ -195,6 +200,106 @@ public class CRFsUtil {
 		
 		return reslist;
 	}
+	
+	// 从结果中提取新词并过滤
+	public static String getNewWords(String crfresult) throws Exception{
+		
+		List<String> cnws = findCandidateWords(crfresult);
+		List<String> nws = filterWords(cnws);
+		String result = toNewWordsString(nws);
+		
+		return result;
+	}
+
+	private static List<String> findCandidateWords(String crfresult) {
+
+		List<String> result = new ArrayList<String>();
+		
+		String[] w = crfresult.split("\r\n");
+		StringBuffer sb = new StringBuffer();
+		for(int i=0;i<w.length;i++){
+			String[] sw = w[i].split("\t");
+			switch(sw[2]){
+				case "B":
+					if(sb.length()>0){
+						result.add(sb.toString());
+						sb = new StringBuffer();
+					}
+					sb.append(sw[0]);
+					if(i==w.length){
+						result.add(sb.toString());
+					}
+					break;
+				case "I":
+					sb.append(sw[0]);
+					if(i==w.length){
+						result.add(sb.toString());
+					}
+					break;
+				case "O":
+					if(sb.length()>0){
+						result.add(sb.toString());
+						sb = new StringBuffer();
+					}
+			}
+		}
+		
+		return result;
+	}
+
+	private static List<String> filterWords(List<String> cnws) throws Exception {
+		if(cnws==null)
+			return null;
+		try{
+			for(String s :cnws){
+				if(!isNewWord(s)){
+					cnws.remove(s);
+				}
+			}
+		}catch(Exception e){
+			if(e.toString().contains("ConcurrentModificationException"))
+				return null;
+		}
+		return cnws;
+	}
+
+	private static boolean isNewWord(String s) throws Exception {
+
+		List<String> cateDict = DictMakeUtil.makeCateDict(category);
+		
+		Word2VEC w2v = new Word2VEC();
+	    w2v.loadJavaModel("model/vector.mod");
+		
+	    float max = 0;
+	    float temp = 0;
+		for(String c : cateDict){
+			try{
+				temp = W2vUtil.dist(w2v.getWordVector(c), w2v.getWordVector(s));
+				max = temp>max?temp:max;
+			}catch(Exception e){
+				continue;
+			}
+
+		}
+		return max>sim;
+	}
+
+	private static String toNewWordsString(List<String> nws) {
+
+		if(nws==null)
+			return null;
+		
+		StringBuffer sb = new StringBuffer();
+		for(String nw : nws){
+			sb.append(nw);
+			sb.append("\r\n");
+		}
+		return sb.toString();
+	}
+	
+	
+	
+	
 	
 //	// 交叉验证列表
 //	public static List<List<CRFTag>> divDataset(List<CRFTag> totalTag,int type){
