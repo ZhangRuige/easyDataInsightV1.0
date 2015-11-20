@@ -1,6 +1,6 @@
-package com.zhongyitech.edi.NLP.model;
+package omsaTest.model;
 
-public class SingleWord {
+public class CRFTag {
 	//字
 	private String word;
 	//词性标签,包括BEMS

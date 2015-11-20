@@ -1,4 +1,4 @@
-package com.zhongyitech.edi.NLP.model;
+package omsaTest.model;
 
 import java.util.List;
 
