@@ -1,4 +1,4 @@
-package omsaTest.util;
+package com.zhongyitech.edi.NLP.util;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,7 +6,7 @@ import java.util.List;
 import org.ansj.domain.Term;
 import org.ansj.splitWord.analysis.ToAnalysis;
 
-import omsaTest.model.CRFTag;
+import com.zhongyitech.edi.NLP.model.CRFTag;
 
 public class CRFsUtil {
 	

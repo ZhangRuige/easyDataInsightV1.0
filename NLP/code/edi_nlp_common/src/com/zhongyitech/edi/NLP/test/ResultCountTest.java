@@ -1,19 +1,13 @@
-package omsaTest.test;
+package com.zhongyitech.edi.NLP.test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
-import org.ansj.domain.Term;
-import org.ansj.library.UserDefineLibrary;
-import org.ansj.splitWord.analysis.NlpAnalysis;
-import org.ansj.splitWord.analysis.ToAnalysis;
-import org.ansj.util.FilterModifWord;
-
-import omsaTest.model.Opinion;
-import omsaTest.util.IoUtil;
-import omsaTest.util.OpMiningUtil;
+import com.zhongyitech.edi.NLP.model.Opinion;
+import com.zhongyitech.edi.NLP.util.IoUtil;
+import com.zhongyitech.edi.NLP.util.OpMiningUtil;
 
 public class ResultCountTest {
 

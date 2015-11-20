@@ -1,8 +1,9 @@
-package omsaTest.test;
+package com.zhongyitech.edi.NLP.test;
+
 import java.util.List;
 
-import omsaTest.model.Opinion;
-import omsaTest.util.OpMiningUtil;
+import com.zhongyitech.edi.NLP.model.Opinion;
+import com.zhongyitech.edi.NLP.util.OpMiningUtil;
 
 public class Test {
 

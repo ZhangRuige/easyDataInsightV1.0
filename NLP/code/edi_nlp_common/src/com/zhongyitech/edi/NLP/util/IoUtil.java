@@ -1,4 +1,4 @@
-package omsaTest.util;
+package com.zhongyitech.edi.NLP.util;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;

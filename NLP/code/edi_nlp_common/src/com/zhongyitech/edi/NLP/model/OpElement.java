@@ -1,4 +1,4 @@
-package omsaTest.model;
+package com.zhongyitech.edi.NLP.model;
 
 public class OpElement {
 	

@@ -1,4 +1,4 @@
-package omsaTest.util;
+package com.zhongyitech.edi.NLP.util;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -10,12 +10,11 @@ import org.ansj.splitWord.analysis.ToAnalysis;
 import org.ansj.util.FilterModifWord;
 
 import com.ansj.vec.Word2VEC;
-
-import omsaTest.model.OpAspElement;
-import omsaTest.model.OpElement;
-import omsaTest.model.OpSentiElement;
-import omsaTest.model.OpTreeNode;
-import omsaTest.model.Opinion;
+import com.zhongyitech.edi.NLP.model.OpAspElement;
+import com.zhongyitech.edi.NLP.model.OpElement;
+import com.zhongyitech.edi.NLP.model.OpSentiElement;
+import com.zhongyitech.edi.NLP.model.OpTreeNode;
+import com.zhongyitech.edi.NLP.model.Opinion;
 
 public class OpMiningUtil {
 	/*
