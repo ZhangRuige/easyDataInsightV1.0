@@ -2,6 +2,7 @@ package com.zhongyitech.edi.NLP.util;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.ansj.domain.Term;
 import org.ansj.splitWord.analysis.ToAnalysis;
@@ -17,6 +18,8 @@ public class CRFsUtil {
 	private static int cross_validate_k = 10;
 	// 相似度阈值
 	private static float sim = (float) 0.35 ;
+	
+	private static Word2VEC w2v = new Word2VEC();
 	
 	/* CRF过程
 	 * 
@@ -48,12 +51,12 @@ public class CRFsUtil {
 				taglist.add(tagComm(comment));
 			}
 			// 每块标注to字符串
-			result.add(toTrainSet(taglist));
+			result.add(toCrossValBlock(taglist));
 		}
 		return result;
 	}
 	
-	private static String toTrainSet(List<List<CRFTag>> taglist) {
+	private static String toCrossValBlock(List<List<CRFTag>> taglist) {
 		String result = new String();
 		StringBuffer sb = new StringBuffer();
 		for(int i=0;i<taglist.size();i++){
@@ -204,6 +207,8 @@ public class CRFsUtil {
 	// 从结果中提取新词并过滤
 	public static String getNewWords(String crfresult) throws Exception{
 		
+		w2v.loadJavaModel("model/vector.mod");
+		
 		List<String> cnws = findCandidateWords(crfresult);
 		List<String> nws = filterWords(cnws);
 		String result = toNewWordsString(nws);
@@ -213,7 +218,7 @@ public class CRFsUtil {
 
 	private static List<String> findCandidateWords(String crfresult) {
 
-		List<String> result = new ArrayList<String>();
+		List<String> result = new CopyOnWriteArrayList<String>();
 		
 		String[] w = crfresult.split("\r\n");
 		StringBuffer sb = new StringBuffer();
@@ -257,8 +262,7 @@ public class CRFsUtil {
 				}
 			}
 		}catch(Exception e){
-			if(e.toString().contains("ConcurrentModificationException"))
-				return null;
+			System.out.println("还是不能直接编辑！！！！！");
 		}
 		return cnws;
 	}
@@ -266,9 +270,6 @@ public class CRFsUtil {
 	private static boolean isNewWord(String s) throws Exception {
 
 		List<String> cateDict = DictMakeUtil.makeCateDict(category);
-		
-		Word2VEC w2v = new Word2VEC();
-	    w2v.loadJavaModel("model/vector.mod");
 		
 	    float max = 0;
 	    float temp = 0;
