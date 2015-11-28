@@ -13,16 +13,18 @@ public class IoUtil {
 		InputStreamReader read = new InputStreamReader(new FileInputStream(path), "utf-8");
 		BufferedReader br = new BufferedReader(read);
 		StringBuffer sb = new StringBuffer();
+		int flag = 0;
 		String str = null;
-		int flag = 1;
 		while ((str = br.readLine()) != null) {
-			if(flag == 1){
+			if(flag == 0 && (Integer.valueOf(str.charAt(0))==65279 || Integer.valueOf(str.charAt(0))==32)){
 				str=str.substring(1);
-				flag=0;
 			}
 			sb.append(str);
 			sb.append("\n");
+			if(flag==0)
+				flag=1;
 		}
+		br.close();
 		return sb.toString();
 	}
 	

@@ -1,25 +1,21 @@
 package com.zhongyitech.edi.NLP.util;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.Random;
 
 import org.ansj.domain.Term;
 import org.ansj.splitWord.analysis.ToAnalysis;
 
-import com.ansj.vec.Word2VEC;
 import com.zhongyitech.edi.NLP.model.CRFTag;
 
-public class CRFsUtil {
+public class CreateCVBlocks {
 	
 	private static String[] dicts = {"dicts/dict0.txt","dicts/dict1.txt","dicts/dict2.txt","dicts/dict3.txt","dicts/dict4.txt","dicts/dict5.txt"};
 	private static String category = "dicts/categoryDicts.txt";
 	
 	private static int cross_validate_k = 10;
-	// 相似度阈值
-	private static float sim = (float) 0.35 ;
-	
-	private static Word2VEC w2v = new Word2VEC();
 	
 	/* CRF过程
 	 * 
@@ -39,7 +35,12 @@ public class CRFsUtil {
 	// 分割数据形成训练集
 	public static List<String> getTrainData(String string) throws Exception{
 		List<String> result = new ArrayList<String>();
-		
+		try {
+			string = IoUtil.readTxt(string);
+		} catch (Exception e) {
+			System.out.println("请检查输入文件");
+			throw e;
+		}
 		// 切分成交叉验证的块
 		List<List<String>> list = splitData(string);
 		// 每个块包含多条评论
@@ -74,17 +75,22 @@ public class CRFsUtil {
 		return result;
 	}
 
-	private static List<CRFTag> tagComm(String str) throws Exception {
+	private static List<CRFTag> tagComm(String str) throws Exception{
 		// 分割comment和indexes
 		String[] sl = str.split("\t");
 		String comment = sl[0];
 		String indexs = sl[1];
 		
-		List<String> cateDict = DictMakeUtil.makeCateDict(category);//观点分类词典读取
-		String[] dict = DictMakeUtil.makeOpDict(dicts);//观点元素词典
-		DictMakeUtil.modifyDict(dict,"/");//分词词典
-		DictMakeUtil.modifyDict(cateDict);//分词词典
-		
+		List<String> cateDict = new ArrayList<String>();
+		try {
+			cateDict = DictMakeUtil.makeCateDict(category);//观点分类词典读取
+			String[] dict = DictMakeUtil.makeOpDict(dicts);//观点元素词典
+			DictMakeUtil.modifyDict(dict,"/");//分词词典
+			DictMakeUtil.modifyDict(cateDict);//分词词典
+		} catch (Exception e) {
+			System.out.println("词典路径或分类路径错误");
+			throw e;
+		}
 		comment = OpMiningUtil.preTreatWords(comment);
 		List<Term> list = ToAnalysis.parse(comment);
 		// 分割出每个index
@@ -94,6 +100,8 @@ public class CRFsUtil {
 
 	private static List<List<String>> splitData(String string) {
 		String[] comments = string.split("\r\n");
+		if(comments.length==1)
+			comments = string.split("\n");
 		Integer[] comlen = new Integer[comments.length];
 		for(int i=0;i<comments.length;i++){
 			comlen[i] = comments[i].indexOf("\t");
@@ -143,14 +151,22 @@ public class CRFsUtil {
 
 	// 对某条评论贴标签列表
 	private static Integer[] randomList(int length) {
-		Integer[] result = new Integer[length];
-		for(int i=0;i<length;i++){
-			result[i] = i;
-		}
-		return result;
+	    Integer[] array = new Integer[length];
+	    for (int i = 0; i < array.length; i++) {
+	        array[i] = i;
+	    }
+	    int x = 0, tmp = 0;
+	    Random random = new Random();
+	    for (int i = array.length - 1; i > 0; i--) {
+	        x = random.nextInt(i+1);
+	        tmp = array[i];
+	        array[i] = array[x];
+	        array[x] = tmp;
+	    }
+	    return array;
 	}
 
-	public static List<CRFTag> tagMap(String comm,List<Term> list,String[] index) throws Exception{
+	public static List<CRFTag> tagMap(String comm,List<Term> list,String[] index){
 
 		
 		List<Integer> s = new ArrayList<Integer>();
@@ -176,6 +192,10 @@ public class CRFsUtil {
 		for(int j=0;j<list.size();j++){
 			String tempstr = list.get(j).toString();
 			int temp = tempstr.indexOf("/");
+			// 没有"/",说明是英文标点
+			if(temp==-1){
+				reslist.get(itag++).setPos_tag("Sw");
+			}
 			for(int i=0;i<temp;i++){
 				if(temp==1){
 					reslist.get(itag++).setPos_tag("S"+tempstr.substring(temp+1));
@@ -195,112 +215,24 @@ public class CRFsUtil {
 		for(int i=0;i<s.size();i++){
 			int st = s.get(i);
 			int et = e.get(i);
+			if(st>=reslist.size()||et>=reslist.size()||st>et){
+				System.out.println("第"+i+"个词的index有问题.");
+				continue;
+			}
+			if(st==-1)
+				continue;
 			reslist.get(st).setSpec_tag("B");
 			for(int j=st+1;j<=et;j++){
+//				System.out.println(i);
+//				System.out.println(j);
+//				System.out.println(reslist.size());
+//				System.out.println(reslist.get(j).getWord());
 				reslist.get(j).setSpec_tag("I");
 			}
 		}
 		
 		return reslist;
 	}
-	
-	// 从结果中提取新词并过滤
-	public static String getNewWords(String crfresult) throws Exception{
-		
-		w2v.loadJavaModel("model/vector.mod");
-		
-		List<String> cnws = findCandidateWords(crfresult);
-		List<String> nws = filterWords(cnws);
-		String result = toNewWordsString(nws);
-		
-		return result;
-	}
-
-	private static List<String> findCandidateWords(String crfresult) {
-
-		List<String> result = new CopyOnWriteArrayList<String>();
-		
-		String[] w = crfresult.split("\r\n");
-		StringBuffer sb = new StringBuffer();
-		for(int i=0;i<w.length;i++){
-			String[] sw = w[i].split("\t");
-			switch(sw[2]){
-				case "B":
-					if(sb.length()>0){
-						result.add(sb.toString());
-						sb = new StringBuffer();
-					}
-					sb.append(sw[0]);
-					if(i==w.length){
-						result.add(sb.toString());
-					}
-					break;
-				case "I":
-					sb.append(sw[0]);
-					if(i==w.length){
-						result.add(sb.toString());
-					}
-					break;
-				case "O":
-					if(sb.length()>0){
-						result.add(sb.toString());
-						sb = new StringBuffer();
-					}
-			}
-		}
-		
-		return result;
-	}
-
-	private static List<String> filterWords(List<String> cnws) throws Exception {
-		if(cnws==null)
-			return null;
-		try{
-			for(String s :cnws){
-				if(!isNewWord(s)){
-					cnws.remove(s);
-				}
-			}
-		}catch(Exception e){
-			System.out.println("还是不能直接编辑！！！！！");
-		}
-		return cnws;
-	}
-
-	private static boolean isNewWord(String s) throws Exception {
-
-		List<String> cateDict = DictMakeUtil.makeCateDict(category);
-		
-	    float max = 0;
-	    float temp = 0;
-		for(String c : cateDict){
-			try{
-				temp = W2vUtil.dist(w2v.getWordVector(c), w2v.getWordVector(s));
-				max = temp>max?temp:max;
-			}catch(Exception e){
-				continue;
-			}
-
-		}
-		return max>sim;
-	}
-
-	private static String toNewWordsString(List<String> nws) {
-
-		if(nws==null)
-			return null;
-		
-		StringBuffer sb = new StringBuffer();
-		for(String nw : nws){
-			sb.append(nw);
-			sb.append("\r\n");
-		}
-		return sb.toString();
-	}
-	
-	
-	
-	
 	
 //	// 交叉验证列表
 //	public static List<List<CRFTag>> divDataset(List<CRFTag> totalTag,int type){
@@ -395,5 +327,25 @@ public class CRFsUtil {
 //		
 //		return;
 //	}
+	
+	// 输出CV分块集合
+	public static void toCVBlocksTxt(List<String> l, String string) throws Exception {
+		for(Integer i=0;i<l.size();i++){
+			StringBuffer path = new StringBuffer();
+			path.append(string+"/block");
+			String s = l.get(i);
+			if(i<10)
+				path.append("0");
+			path.append(i.toString());
+			try {
+				IoUtil.writeToText(s, path.toString());
+			} catch (IOException e) {
+				System.out.println("CV分块文件写入异常");
+				e.printStackTrace();
+				throw e;
+			}
+		}
+		
+	}
 
 }

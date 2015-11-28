@@ -51,7 +51,11 @@ public class OpMiningUtil {
 		List<Term> list = FilterModifWord.modifResult(list1);//去停用词
 		List<Opinion> oplist = OpMiningUtil.opMining(words, dict ,list, product);//观点提取
 		oplist = OpMiningUtil.aspectCategory(oplist,cateDict);//观点对象分类
+		
+//		System.out.println(oplist.size());
+		
 		return oplist;
+		
 	}
 	
 	private static void setStopWord(String stw) throws Exception {
