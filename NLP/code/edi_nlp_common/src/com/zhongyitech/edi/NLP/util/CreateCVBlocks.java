@@ -13,9 +13,10 @@ import com.zhongyitech.edi.NLP.model.CRFTag;
 public class CreateCVBlocks {
 	
 	private static String[] dicts = {"dicts/dict0.txt","dicts/dict1.txt","dicts/dict2.txt","dicts/dict3.txt","dicts/dict4.txt","dicts/dict5.txt"};
-	private static String category = "dicts/categoryDicts.txt";
 	
 	private static int cross_validate_k = 10;
+	
+	private static String[] dict =null;
 	
 	/* CRF过程
 	 * 
@@ -75,6 +76,10 @@ public class CreateCVBlocks {
 		return result;
 	}
 
+	private static void loadDicts() throws Exception{
+		dict = DictMakeUtil.makeOpDict(dicts);//观点元素词典
+	}
+	
 	private static List<CRFTag> tagComm(String str) throws Exception{
 		// 分割comment和indexes
 		String[] sl = str.split("\t");
@@ -83,8 +88,9 @@ public class CreateCVBlocks {
 		
 		List<String> cateDict = new ArrayList<String>();
 		try {
-			cateDict = DictMakeUtil.makeCateDict(category);//观点分类词典读取
-			String[] dict = DictMakeUtil.makeOpDict(dicts);//观点元素词典
+			if(cateDict==null || dict==null){
+				loadDicts();
+			}
 			DictMakeUtil.modifyDict(dict,"/");//分词词典
 			DictMakeUtil.modifyDict(cateDict);//分词词典
 		} catch (Exception e) {
@@ -230,7 +236,6 @@ public class CreateCVBlocks {
 				reslist.get(j).setSpec_tag("I");
 			}
 		}
-		
 		return reslist;
 	}
 	

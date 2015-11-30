@@ -26,17 +26,18 @@ public class ResultCountTest {
 //		System.out.println(e-s);
 		
 		String path = "E:\\comments.txt";
+		String product = "pro1";
+		
 		String[] c = extractComments(path).split("\n");
 		int n = 10;
 //		String str = randomComments(c,n);
 //		String[] strs = str.split("\n");
-		String product = "pro1";
+		
 		List<Integer> sentNo = new ArrayList<Integer>();
 		int t = 0;
 		List<Opinion> list = new ArrayList<Opinion>();
-		
-		for(String s :c){
-			List<Opinion> templ = OpMiningUtil.doSa(s, product);
+		for(String str :c){
+			List<Opinion> templ = OpMiningUtil.doSa(str, product);
 			list.addAll(templ);
 			t++;
 			int tsz = templ.size();
@@ -58,7 +59,6 @@ public class ResultCountTest {
 			o = setCountResult(list,sentNo,i);
 			opres.add(o);
 		}
-		
 		String sample_path = "E:\\commentsops.txt";
 		List<OpRes> sample = getSample(sample_path);
 		ResultCount res = compare(opres,sample);
@@ -105,6 +105,8 @@ public class ResultCountTest {
 		float opprecision = (float)op/opres.size();
 		
 		float saprecision = (float)count/op;
+		
+		float fscore = 2*recall*precision/(recall+precision);
 		
 		rc.setRecall(recall);
 		rc.setPrecision(precision);

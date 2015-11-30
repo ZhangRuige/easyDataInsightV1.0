@@ -24,6 +24,8 @@ public class ToNewWords {
 		NewWordsDiscovery.getNewWords(args[0],sim);
 //		System.out.println(l2);
 		NewWordsDiscovery.toNewWordsTxt();
+		
+//		System.out.println("done!");
 	}
 
 }

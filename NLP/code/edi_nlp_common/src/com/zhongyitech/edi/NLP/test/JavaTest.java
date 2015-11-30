@@ -8,6 +8,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.ansj.domain.Term;
+import org.ansj.splitWord.analysis.BaseAnalysis;
+import org.ansj.splitWord.analysis.NlpAnalysis;
 import org.ansj.splitWord.analysis.ToAnalysis;
 
 import com.zhongyitech.edi.NLP.util.CreateCVBlocks;
@@ -38,9 +40,10 @@ public class JavaTest {
 //		}
 //		test(s);
 		
-		String s = "\"aaa\"";
-		String s1 = s.replaceAll("\\\\", "");
-		System.out.println(s1);
+//		String s = "\"aaa\"";
+//		String s1 = s.replaceAll("\\\\", "");
+//		System.out.println(s1);
+		System.out.println(ToAnalysis.parse("后盖很漂亮。试用了一天，效果感觉还是可以"));
 	}
 	
 	private static String[] dicts = {"dicts/dict0.txt","dicts/dict1.txt","dicts/dict2.txt","dicts/dict3.txt","dicts/dict4.txt","dicts/dict5.txt"};

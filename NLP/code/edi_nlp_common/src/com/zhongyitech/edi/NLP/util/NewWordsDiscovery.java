@@ -21,9 +21,11 @@ public class NewWordsDiscovery {
 	private static String crf_result = "";
 	
 	// 相似度阈值
-	private static float sim = (float) 0.3;
+	private static float sim = (float) 0.4;
 	
 	private static Word2VEC w2v = new Word2VEC();
+	private static int w2vflag = 0;
+
 	
 	// 从结果中提取新词并过滤
 	public static String getNewWords(String crfresult, float f) throws Exception{
@@ -36,7 +38,10 @@ public class NewWordsDiscovery {
 		StringBuffer sb = new StringBuffer();
 		
 		try {
-			w2v.loadJavaModel("model/vector.mod");
+			if(w2vflag==0){
+				w2v.loadJavaModel("model/vector.mod");
+				w2vflag=1;
+			}
 		} catch (IOException e) {
 			System.out.println("word2vec模型文件错误");
 		}

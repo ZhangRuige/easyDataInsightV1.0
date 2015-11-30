@@ -1,23 +1,15 @@
 package com.zhongyitech.edi.NLP.util;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
 import org.ansj.domain.Term;
 import org.ansj.splitWord.analysis.ToAnalysis;
 
 import com.ansj.vec.Learn;
-import com.ansj.vec.Word2VEC;
 
 public class W2vUtil {
+	
+	private static String rawdata = "corpus/rawdata.txt";
 	
 //	private static Map<String, float[]> word2VecMap = new HashMap<String, float[]>();
 //	
@@ -80,9 +72,18 @@ public class W2vUtil {
 		}
 	}
 
-	public static void word2vecModelTrain(String corpus) throws Exception {
+	// 自定义语料库路径
+	public static void word2vecModelTrain(String str) throws Exception {
 		
-		List<Term> list = ToAnalysis.parse(IoUtil.readTxt(corpus));
+		if(true){
+			rawdata = str;
+		}
+		word2vecModelTrain();
+	}
+	// w2v模型训练
+	public static void word2vecModelTrain() throws Exception {
+		
+		List<Term> list = ToAnalysis.parse(IoUtil.readTxt(rawdata));
 		StringBuffer s = new StringBuffer();
 		for(int i=0;i<list.size();i++){
 			s.append(list.get(i).toString()+" ");

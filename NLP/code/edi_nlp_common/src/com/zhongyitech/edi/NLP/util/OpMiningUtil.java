@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.ansj.domain.Term;
+import org.ansj.splitWord.analysis.BaseAnalysis;
 import org.ansj.splitWord.analysis.ToAnalysis;
 import org.ansj.util.FilterModifWord;
 
@@ -24,11 +25,25 @@ public class OpMiningUtil {
 	private static String category = "dicts/categoryDicts.txt";
 	private static String corpus = "corpus/w2vTrainSet.txt";
 	private static String stpwdict = "dicts/stopWordDict.txt";
+	
+	private static List<String> cateDict = null;
+	private static String[] dict =null;
+	
+	private static Word2VEC w2v = new Word2VEC();
+	private static int w2vflag = 0;
 	//用于标注前两个词在观点树中的层次
 	private static int[] lastTermLevel = {0,0};
 	
 	//对象分类相似度阈值
 	private static float similarity = (float) 0.35 ;
+	//观点句最大间隔
+	private static int maxgap = 10;
+	/* 分词种类:
+	 * 1BaseAnalysis
+	 * 2ToAnalysis
+	 */
+	private static int segType = 2;
+	
 	
 	public static void trainModel() throws Exception{
 		W2vUtil.word2vecModelTrain(corpus);
@@ -36,17 +51,35 @@ public class OpMiningUtil {
 	public static void trainModel(String file) throws Exception{
 		W2vUtil.word2vecModelTrain(file);
 	}
+	// 避免多次IO
+	public static void loadDicts() throws Exception{
+		cateDict = DictMakeUtil.makeCateDict(category);//观点分类词典读取
+		dict = DictMakeUtil.makeOpDict(dicts);//观点元素词典
+	}
 	
 	public static List<Opinion> doSa(String words,String product) throws Exception{
 		String words1 = preTreatWords(words);
-		
-		List<String> cateDict = DictMakeUtil.makeCateDict(category);//观点分类词典读取
-		String[] dict = DictMakeUtil.makeOpDict(dicts);//观点元素词典
+		if(w2vflag==0){
+			w2v.loadJavaModel("model/vector.mod");
+			w2vflag=1;
+		}
+		if(cateDict==null || dict==null){
+			loadDicts();
+		}
 		DictMakeUtil.modifyDict(dict,"/");//分词词典
 		DictMakeUtil.modifyDict(cateDict);//分词词典
 		
-		List<Term> list1 = ToAnalysis.parse(words1);
+		List<Term> list1 = new ArrayList<Term>();
 		
+		switch(segType){
+		case 1:
+			list1 = BaseAnalysis.parse(words1);
+			break;
+		case 2:
+			list1 = ToAnalysis.parse(words1);
+			break;
+		}
+
 		setStopWord(stpwdict);
 		List<Term> list = FilterModifWord.modifResult(list1);//去停用词
 		List<Opinion> oplist = OpMiningUtil.opMining(words, dict ,list, product);//观点提取
@@ -188,7 +221,7 @@ public class OpMiningUtil {
 		
 		String product = p;
 		// 外部有指定的产品品牌型号
-		if (!product.equals("")&&product!=null) {
+		if (product!=null && !product.equals("")) {
 			pro_flag = -1;
 			OpElement e0 = new OpElement();
 			e0.setOpElementInfos(product, null, null, treeIndex);
@@ -207,6 +240,26 @@ public class OpMiningUtil {
 				String[] segsplit = seg[j].split("/");
 				if (segsplit.length != 2)
 					continue;
+				// 如果满足其他观点结束规则
+				if (otherEndRule(seg)){
+//-----------------------------------------------------------------割一下割一下割一下割一下割一下割一下-----------------------------------------------------------------
+					/* 异常结束，说明没有感情词。
+					 * 
+					 * ## 要把所有异常结束都放到这个方法里
+					 *  # 新 非并列产品（待定）
+					 *  # 新 非并列对象
+					 *  # 新 非并列属性
+					 *  # 一些特殊标点符号
+					 *  # 间隔过大
+					 *  # 达到seg.length
+					 * ## 必须清空所有队列
+					 * ## continue,重新开始提取新观点
+					 */
+					continue;
+				}
+//=================================================================割一下割一下割一下割一下割一下割一下=================================================================
+				
+				// 否则按正常结束判断
 				// 如果是产品
 				if (dict[0].contains("/" + segsplit[0] + "/")) {
 					if (pro_flag == -1) {
@@ -340,6 +393,9 @@ public class OpMiningUtil {
 							if(pro_list.size()==0 || pro_flag == -1){
 								continue;
 							}
+							// 如果和观点对象距离太远，则放弃
+							if(e.getStart_index()-pro_list.get(0).getEnd_index()> maxgap)
+								continue;
 //							editAll(e,pro_list,"3",treeIndex,opTree);
 							while(t<pro_list.size()){
 								int parents = pro_list.get(t++).getTree_index();
@@ -352,6 +408,9 @@ public class OpMiningUtil {
 							}
 							continue;
 						}
+						// 如果和观点对象距离太远，则放弃
+						if(e.getStart_index()-asp_list.get(0).getEnd_index()> maxgap)
+							continue;
 						while(t<asp_list.size()){
 							int parents = asp_list.get(t++).getTree_index();
 							OpTreeNode node = new OpTreeNode(treeIndex++);
@@ -361,6 +420,9 @@ public class OpMiningUtil {
 						asp_list.clear();
 						continue;
 					}
+					// 如果和观点对象距离太远，则放弃
+					if(e.getStart_index()-att_list.get(0).getEnd_index()> maxgap)
+						continue;
 					// 对上层队列的所有元素新增孩子节点
 					while(t<att_list.size()){
 						int parents = att_list.get(t++).getTree_index();
@@ -393,6 +455,9 @@ public class OpMiningUtil {
 								continue;
 							}
 //							editAll(e,pro_list,"3",treeIndex,opTree);
+							// 如果和观点对象距离太远，则放弃
+							if(e.getStart_index()-pro_list.get(0).getEnd_index()> maxgap)
+								continue;
 							while(t<pro_list.size()){
 								int parents = pro_list.get(t++).getTree_index();
 								OpTreeNode node = new OpTreeNode(treeIndex++);
@@ -404,6 +469,9 @@ public class OpMiningUtil {
 							}
 							continue;
 						}
+						// 如果和观点对象距离太远，则放弃
+						if(e.getStart_index()-asp_list.get(0).getEnd_index()>maxgap)
+							continue;
 						while(t<asp_list.size()){
 							int parents = asp_list.get(t++).getTree_index();
 							OpTreeNode node = new OpTreeNode(treeIndex++);
@@ -413,6 +481,9 @@ public class OpMiningUtil {
 						asp_list.clear();
 						continue;
 					}
+					// 如果和观点对象距离太远，则放弃
+					if(e.getStart_index()-att_list.get(0).getEnd_index()>maxgap)
+						continue;
 					// 对上层队列的所有元素新增孩子节点
 					while(t<att_list.size()){
 						int parents = att_list.get(t++).getTree_index();
@@ -431,6 +502,11 @@ public class OpMiningUtil {
 		return opTree;
 	}
 
+	// 判断是否以异常结束一个观点提取过程
+	private static boolean otherEndRule(String[] seg) {
+		// TODO Auto-generated method stub
+		return false;
+	}
 	//
 	private static void editAll(OpElement e, List<OpElement> list, String string, int treeIndex, List<OpTreeNode> opTree ) {
 		int t = 0;
@@ -483,9 +559,6 @@ public class OpMiningUtil {
 	public static List<Opinion> aspectCategory(List<Opinion> oplist, List<String> cateDict)
 			throws Exception {
 
-		Word2VEC w2v = new Word2VEC();
-	    w2v.loadJavaModel("model/vector.mod");
-		
 		List<Opinion> resultlist = new ArrayList<Opinion>();
 		for (Opinion op : oplist) {
 //			float maxd = 999999;
