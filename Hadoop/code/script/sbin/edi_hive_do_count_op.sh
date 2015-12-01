@@ -1,6 +1,6 @@
 #!/bin/bash
-
-echo "DO COUNT START."
+start_time=$(date +%s)
+echo "START.$0"
 
 cur_date=`date +%Y%m%d%H%M%S`
 echo $cur_date
@@ -14,6 +14,5 @@ from EDI_R_COMM_TAG R
 group by p.BRAND,P.MODEL,R.ASPECT,R.ATTR;" 
 
 
-echo "DO COUNT END."
-
-
+echo "END.$0"
+echo 'spend time(s) :'$(( $(date +%s) - $start_time ))
