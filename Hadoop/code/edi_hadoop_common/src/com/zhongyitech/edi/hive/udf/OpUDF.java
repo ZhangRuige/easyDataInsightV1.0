@@ -10,7 +10,7 @@ import com.zhongyitech.edi.NLP.util.OpMiningUtil;
 
 //用于观点提取的hive transform 自定义类
 public class OpUDF extends UDF {
-
+		
 	public ArrayList<ArrayList<String>> evaluate(String commId,String comm, String prodInfo) {
 		ArrayList<ArrayList<String>> ps = new ArrayList<ArrayList<String>>();
 		try {
@@ -23,7 +23,34 @@ public class OpUDF extends UDF {
 				ls.add(o.get_aspe());
 				ls.add(o.get_attr());
 				ls.add(o.get_opsa());
-				ls.add(o.getOp_start_index() + "," + o.getOp_end_index());
+				
+				ls.add(String.valueOf(o.getOp_start_index()));	//观点位置
+				ls.add(String.valueOf(o.getOp_end_index()));
+				
+				if(o.getAttribute()==null){ //属性位置
+					ls.add("NULL");
+					ls.add("NULL");
+				}else{
+					ls.add(String.valueOf(o.getAttribute().getStart_index()));
+					ls.add(String.valueOf(o.getAttribute().getEnd_index()));
+				}
+				
+				if(o.getAspect()==null){ //对象位置
+					ls.add("NULL");
+					ls.add("NULL");
+				}else{
+					ls.add(String.valueOf(o.getAspect().getStart_index()));
+					ls.add(String.valueOf(o.getAspect().getEnd_index()));
+				}
+				
+				if(o.getSentiment()==null){//情感词位置
+					ls.add("NULL");
+					ls.add("NULL");
+				}else{
+					ls.add(String.valueOf(o.getSentiment().getStart_index()));
+					ls.add(String.valueOf(o.getSentiment().getEnd_index()));
+				}
+				
 				ps.add(ls);
 			}
 		} catch (Exception e) {
