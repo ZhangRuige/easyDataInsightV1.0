@@ -11,7 +11,7 @@ public class ToNewWords {
 
 	public static void main(String[] args) throws Exception{
 		
-		float sim = (float) 0.4;
+		float sim = (float) 0.5;
 		if(args.length!=2 && args.length!=1){
 			System.out.println("请输入两个参数：1.CRF标注结果路径不能为空，2.过滤的相似度阈值");
 			return;

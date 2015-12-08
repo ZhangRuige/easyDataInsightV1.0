@@ -16,6 +16,7 @@ import com.zhongyitech.edi.NLP.model.OpElement;
 import com.zhongyitech.edi.NLP.model.OpSentiElement;
 import com.zhongyitech.edi.NLP.model.OpTreeNode;
 import com.zhongyitech.edi.NLP.model.Opinion;
+import com.zhongyitech.edi.NLP.model.Rival;
 
 public class OpMiningUtil {
 	/*
@@ -58,6 +59,9 @@ public class OpMiningUtil {
 	}
 	
 	public static List<Opinion> doSa(String words,String product) throws Exception{
+		if(words==null){
+			return new ArrayList<>();
+		}
 		String words1 = preTreatWords(words);
 		if(w2vflag==0){
 			w2v.loadJavaModel("model/vector.mod");
@@ -83,7 +87,7 @@ public class OpMiningUtil {
 		setStopWord(stpwdict);
 		List<Term> list = FilterModifWord.modifResult(list1);//去停用词
 		List<Opinion> oplist = OpMiningUtil.opMining(words, dict ,list, product);//观点提取
-		oplist = OpMiningUtil.aspectCategory(oplist,cateDict);//观点对象分类
+		oplist = OpMiningUtil.aspectCategory(oplist,cateDict);//观点对象分类,包括一级二级分类
 		
 //		System.out.println(oplist.size());
 		
@@ -91,7 +95,7 @@ public class OpMiningUtil {
 		
 	}
 	
-	private static void setStopWord(String stw) throws Exception {
+	public static void setStopWord(String stw) throws Exception {
 
 		String str = IoUtil.readTxt(stpwdict);
 		String[] ss = str.split("\n");

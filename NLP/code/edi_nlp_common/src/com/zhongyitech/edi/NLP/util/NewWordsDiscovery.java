@@ -21,7 +21,7 @@ public class NewWordsDiscovery {
 	private static String crf_result = "";
 	
 	// 相似度阈值
-	private static float sim = (float) 0.4;
+	private static float sim = (float) 0.5;
 	
 	private static Word2VEC w2v = new Word2VEC();
 	private static int w2vflag = 0;
@@ -39,7 +39,7 @@ public class NewWordsDiscovery {
 		
 		try {
 			if(w2vflag==0){
-				w2v.loadJavaModel("model/vector.mod");
+				w2v.loadJavaModel("model/vector.bak");
 				w2vflag=1;
 			}
 		} catch (IOException e) {
@@ -325,11 +325,17 @@ public class NewWordsDiscovery {
 			String[] ws = w.split("\n");
 			
 			String d1 = IoUtil.readTxt(dicts[1]);
+			
+//			String d3 = IoUtil.readTxt(dicts[3]);
+//			String d4 = IoUtil.readTxt(dicts[4]);
 
 			Map<String, Integer> nwMap = new HashMap<String, Integer>();
 			int n = 0;
 			StringBuffer sb = new StringBuffer();
 			for (String s : ws) {
+				if (s.length()==0)
+					continue;
+//				if (!d3.contains("/" + s + "/") && !d4.contains("/" + s + "/")) {
 				if (!d1.contains("/" + s + "/")) {
 					if (nwMap.get(s) == null)
 						n = 0;

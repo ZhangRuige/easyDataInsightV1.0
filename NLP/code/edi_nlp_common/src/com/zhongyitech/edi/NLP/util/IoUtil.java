@@ -16,8 +16,10 @@ public class IoUtil {
 		int flag = 0;
 		String str = null;
 		while ((str = br.readLine()) != null) {
-			if(flag == 0 && (Integer.valueOf(str.charAt(0))==65279 || Integer.valueOf(str.charAt(0))==32)){
-				str=str.substring(1);
+			if(str.length()>0){
+				if(flag == 0 && (Integer.valueOf(str.charAt(0))==65279 || Integer.valueOf(str.charAt(0))==32)){
+					str=str.substring(1);
+				}
 			}
 			sb.append(str);
 			sb.append("\n");

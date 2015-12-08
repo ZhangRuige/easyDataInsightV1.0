@@ -10,10 +10,10 @@ public class Test {
 
 	public static void main(String[] args) throws Exception {
 		// TODO Auto-generated method stub
-		String str = IoUtil.readTxt("E:\\ttttttttttttttttttttttttt");
+//		String str = IoUtil.readTxt("E:\\ttttttttttttttttttttttttt");
 		
 		long s = System.currentTimeMillis();
-		List<Opinion> oplist = OpMiningUtil.doSa(str, "iPhone");
+		List<Opinion> oplist = OpMiningUtil.doSa("颜色不错", "iPhone");
 		long e = System.currentTimeMillis();
 		
 		for (int i = 0; i < oplist.size(); i++) {

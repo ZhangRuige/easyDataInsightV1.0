@@ -2,13 +2,16 @@ package com.zhongyitech.edi.NLP.util;
 
 import java.io.File;
 import java.util.List;
+
 import org.ansj.domain.Term;
 import org.ansj.splitWord.analysis.ToAnalysis;
+import org.ansj.util.FilterModifWord;
 
 import com.ansj.vec.Learn;
 
 public class W2vUtil {
 	
+	private static String stpwdict = "dicts/stopWordDict.txt";
 	private static String rawdata = "corpus/rawdata.txt";
 	
 //	private static Map<String, float[]> word2VecMap = new HashMap<String, float[]>();
@@ -75,15 +78,19 @@ public class W2vUtil {
 	// 自定义语料库路径
 	public static void word2vecModelTrain(String str) throws Exception {
 		
-		if(true){
+		if(str!=""){
 			rawdata = str;
 		}
 		word2vecModelTrain();
 	}
 	// w2v模型训练
-	public static void word2vecModelTrain() throws Exception {
+	private static void word2vecModelTrain() throws Exception {
 		
-		List<Term> list = ToAnalysis.parse(IoUtil.readTxt(rawdata));
+		List<Term> list1 = ToAnalysis.parse(IoUtil.readTxt(rawdata));//分词
+		
+		OpMiningUtil.setStopWord(stpwdict);//停用词典
+		List<Term> list = FilterModifWord.modifResult(list1);//去停用词
+		
 		StringBuffer s = new StringBuffer();
 		for(int i=0;i<list.size();i++){
 			s.append(list.get(i).toString()+" ");
