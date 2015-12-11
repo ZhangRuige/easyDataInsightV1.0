@@ -1,9 +1,12 @@
-# for MYSQL:
-# 前缀M_表示是从hive同步来的数据
-# 前缀T_表示永存临时表
+-- for MYSQL:
+-- 前缀M_表示是从hive同步来的数据
+-- 前缀T_表示永存临时表
+--10 23 * * * ~/db_bk/mysql_db_bak.sh hive hive 122575688861167080414279946P963
+--35 23 * * * ~/db_bk/mysql_db_bak.sh edi edi 1870356536615775580426P42231
 
 
-#1.m_r_amount
+
+--1.m_r_amount
 CREATE TABLE IF NOT EXISTS M_R_AMOUNT (
  BRAND VARCHAR(200) COMMENT '品牌',
  MODEL VARCHAR(200) COMMENT '型号',
@@ -15,7 +18,7 @@ CREATE TABLE IF NOT EXISTS M_R_AMOUNT (
 ) COMMENT '商品标签表，对同一商品从不同纬度的评价';
 
 
-#2.m_prod_comms
+--2.m_prod_comms
 CREATE TABLE IF NOT EXISTS `M_PROD_COMMS` (
   `CRAWL_DATE` varchar(200) DEFAULT NULL COMMENT '爬取时间',
   `ID` varchar(200) DEFAULT NULL COMMENT '评论ID',
@@ -33,7 +36,7 @@ CREATE TABLE IF NOT EXISTS `M_PROD_COMMS` (
 COMMENT='商品评论表，内部表，以写入当天日期分区存储（如20151107）';
 
 
-#3.m_prod_info
+--3.m_prod_info
 CREATE TABLE `M_PROD_INFO` (
   `CRAWL_DATE` varchar(1000) DEFAULT NULL COMMENT '爬取时间',
   `SOURCE` varchar(1000) DEFAULT NULL COMMENT '数据来源，如JD.COM，TMALL.COM',
@@ -55,9 +58,9 @@ CREATE TABLE `M_PROD_INFO` (
 
 
 
-#=====================================================
+--=====================================================
 
-#1.t_m_r_amount
+--1.t_m_r_amount
 CREATE TABLE IF NOT EXISTS T_M_R_AMOUNT (
  BRAND VARCHAR(200) COMMENT '品牌',
  MODEL VARCHAR(200) COMMENT '型号',
@@ -68,7 +71,7 @@ CREATE TABLE IF NOT EXISTS T_M_R_AMOUNT (
 ) COMMENT '商品标签表，对同一商品从不同纬度的评价';
 
 
-#2.t_m_prod_comms
+--2.t_m_prod_comms
 CREATE TABLE `T_M_PROD_COMMS` (
   `CRAWL_DATE` varchar(200) DEFAULT NULL COMMENT '爬取时间',
   `ID` varchar(200) DEFAULT NULL COMMENT '评论ID',
@@ -85,7 +88,7 @@ CREATE TABLE `T_M_PROD_COMMS` (
 
 
 
-#3.t_m_prod_info
+--3.t_m_prod_info
 CREATE TABLE `T_M_PROD_INFO` (
   `CRAWL_DATE` varchar(1000) DEFAULT NULL COMMENT '爬取时间',
   `SOURCE` varchar(1000) DEFAULT NULL COMMENT '数据来源，如JD.COM，TMALL.COM',
@@ -139,6 +142,16 @@ CREATE TABLE IF NOT EXISTS M_CONSUMER_DIST (
  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='消费者地域分布统计'
  
  
+ CREATE TABLE IF NOT EXISTS COMMENT_MOUNTH_AMOUNT (
+ BRAND varchar(200) COMMENT '品牌',
+ MODEL varchar(200) COMMENT '型号',
+ COMM_DAY varchar(200) COMMENT '月份',
+ AMOUNT int(11) COMMENT '数量'
+ ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='月份销量分布统计'
+ 
+ 
+ 
+ 
  
  
  
@@ -189,3 +202,18 @@ STARTS '2015-12-09 17:45:30' ON COMPLETION NOT PRESERVE ENABLE
 DO
 	CALL porc_edi_brand_model_update ();
 /
+
+
+CREATE ALGORITHM=UNDEFINED DEFINER=`edi`@`%` SQL SECURITY DEFINER VIEW `V_COMM_DAY` AS 
+select substr(`c`.`COMM_TIME`,1,7) AS `COMM_DAY`,`c`.`PROD_ID` AS `PROD_ID` 
+from `M_PROD_COMMS` `c`
+/
+
+
+SELECT i.BRAND,i.MODEL,COMM_DAY as MONTH,count(COMM_DAY) as AMOUNT 
+FROM V_COMM_DAY c
+LEFT JOIN M_PROD_INFO  i on i.PROD_ID=c.PROD_ID
+GROUP BY i.BRAND,i.MODEL,COMM_DAY 
+ORDER BY i.BRAND,i.MODEL,COMM_DAY;
+
+
