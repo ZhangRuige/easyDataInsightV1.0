@@ -80,7 +80,7 @@ fi
 
 #4.merge
 echo "INFO:merge to dicts"
-cat dicts/newwords.txt >> dicts/dict1.txt
+cat dicts/newwords.txt >> dicts/dict2.txt
 mv dicts/newwords.txt "dicts/newwords.txt$cur_date"
 ecode=$?
 if [ $ecode -ne 0 ];then
