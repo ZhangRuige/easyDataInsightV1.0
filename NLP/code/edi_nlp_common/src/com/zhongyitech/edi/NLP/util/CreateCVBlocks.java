@@ -1,5 +1,6 @@
 package com.zhongyitech.edi.NLP.util;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -334,7 +335,7 @@ public class CreateCVBlocks {
 //	}
 	
 	// 输出CV分块集合
-	public static void toCVBlocksTxt(List<String> l, String string) throws Exception {
+	public static Long toCVBlocksTxt(List<String> l, String string) throws Exception {
 		for(Integer i=0;i<l.size();i++){
 			StringBuffer path = new StringBuffer();
 			path.append(string+"/block");
@@ -350,7 +351,9 @@ public class CreateCVBlocks {
 				throw e;
 			}
 		}
-		
+		String path0 = string+"/block00";
+		File f = new File(path0);
+		return f.length();
 	}
 
 }

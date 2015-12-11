@@ -123,13 +123,15 @@ public class Opinion {
 	public String get_prod() {
 		return product.getContent();
 	}
-
+	//一级分类还是一级分类
 	public String get_aspe() {
-		return aspect.getAspect_category_centerword();
+//		return aspect.getAspect_category_centerword();
+		return aspect.getContent();
 	}
-
+	//二级分类是总分类
 	public String get_attr() {
-		return attribute.getContent();
+//		return attribute.getContent();
+		return aspect.getAspect_category_centerword();
 	}
 
 	public String get_sent() {

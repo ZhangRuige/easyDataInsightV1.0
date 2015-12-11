@@ -8,19 +8,24 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import org.ansj.domain.Term;
+import org.ansj.splitWord.analysis.ToAnalysis;
+
 import com.ansj.vec.Word2VEC;
 
 public class NewWordsDiscovery {
 	
 	private static String[] dicts = {"dicts/dict0.txt","dicts/dict1.txt","dicts/dict2.txt","dicts/dict3.txt","dicts/dict4.txt","dicts/dict5.txt"};
 	private static String category = "dicts/categoryDicts.txt";
+	private static String cate1 = "dicts/cate1.txt";
 	
 	private static String candi_path = "dicts/candi.txt";
 	private static String nws_path = "dicts/newwords.txt";
+	private static String w2v_path = "model/vector.mod";
 	
 	private static String crf_result = "";
 	
-	// 相似度阈值
+	// 相似度默认阈值
 	private static float sim = (float) 0.5;
 	
 	private static Word2VEC w2v = new Word2VEC();
@@ -39,7 +44,7 @@ public class NewWordsDiscovery {
 		
 		try {
 			if(w2vflag==0){
-				w2v.loadJavaModel("model/vector.bak");
+				w2v.loadJavaModel(w2v_path);
 				w2vflag=1;
 			}
 		} catch (IOException e) {
@@ -191,17 +196,22 @@ public class NewWordsDiscovery {
 	private static boolean isNewWord(String s) throws Exception {
 
 		List<String> cateDict = DictMakeUtil.makeCateDict(category);
+//		List<String> cateDict = DictMakeUtil.makeCateDict(cate1);
 		
 	    float max = 0;
 	    float temp = 0;
 		for(String c : cateDict){
+			if(c==null || c=="" || c.equals(""))
+				continue;
 			try{
 				temp = W2vUtil.dist(w2v.getWordVector(c), w2v.getWordVector(s));
-				max = temp>max?temp:max;
+//				temp = w2v.similarity(c, s);
 			}catch(Exception e){
+//				if(e.toString().contains("NullPointerException"))
+//				System.out.println("新词："+c+"\t不存在w2v模型中!");
 				continue;
 			}
-
+			max = temp>max?temp:max;
 		}
 		return max>sim;
 	}
@@ -324,7 +334,8 @@ public class NewWordsDiscovery {
 			new File(candi_path).delete();
 			String[] ws = w.split("\n");
 			
-			String d1 = IoUtil.readTxt(dicts[1]);
+//			String d1 = IoUtil.readTxt(dicts[1]);
+			String d2 = IoUtil.readTxt(dicts[2]);
 			
 //			String d3 = IoUtil.readTxt(dicts[3]);
 //			String d4 = IoUtil.readTxt(dicts[4]);
@@ -336,7 +347,8 @@ public class NewWordsDiscovery {
 				if (s.length()==0)
 					continue;
 //				if (!d3.contains("/" + s + "/") && !d4.contains("/" + s + "/")) {
-				if (!d1.contains("/" + s + "/")) {
+				if (!d2.contains("/" + s + "/")) {
+//				if (!d1.contains("/" + s + "/")) {
 					if (nwMap.get(s) == null)
 						n = 0;
 					else
@@ -345,9 +357,16 @@ public class NewWordsDiscovery {
 				}
 			}
 			for (Entry<String, Integer> e : nwMap.entrySet()) {
-				sb.append(e.getKey());
-				sb.append("/");
+//				List<Term> l = ToAnalysis.parse(e.getKey());
+//				String[] s = l.toString().split("/");
+//				if(s.length>1 && ( s[1].charAt(0)=='n'||s[1].equals("vn]")||s[1].equals("an]"))){
+					sb.append(e.getKey());
+					sb.append("/");
+//				}
+				
 			}
+			
+			
 			IoUtil.writeToText(sb.toString(), nws_path);
 		} catch (Exception e) {
 			System.out.println("写入词典发生异常");

@@ -16,7 +16,6 @@ import com.zhongyitech.edi.NLP.model.OpElement;
 import com.zhongyitech.edi.NLP.model.OpSentiElement;
 import com.zhongyitech.edi.NLP.model.OpTreeNode;
 import com.zhongyitech.edi.NLP.model.Opinion;
-import com.zhongyitech.edi.NLP.model.Rival;
 
 public class OpMiningUtil {
 	/*
@@ -25,7 +24,9 @@ public class OpMiningUtil {
 	private static String[] dicts = {"dicts/dict0.txt","dicts/dict1.txt","dicts/dict2.txt","dicts/dict3.txt","dicts/dict4.txt","dicts/dict5.txt"};
 	private static String category = "dicts/categoryDicts.txt";
 	private static String corpus = "corpus/w2vTrainSet.txt";
+	
 	private static String stpwdict = "dicts/stopWordDict.txt";
+//	private static String stpwdict = "dicts/chinese_stopword.txt";
 	
 	private static List<String> cateDict = null;
 	private static String[] dict =null;
@@ -39,6 +40,8 @@ public class OpMiningUtil {
 	private static float similarity = (float) 0.35 ;
 	//观点句最大间隔
 	private static int maxgap = 10;
+	//一、二级分类最大间隔
+	private static int maxgap2 = 3;
 	/* 分词种类:
 	 * 1BaseAnalysis
 	 * 2ToAnalysis
@@ -53,7 +56,7 @@ public class OpMiningUtil {
 		W2vUtil.word2vecModelTrain(file);
 	}
 	// 避免多次IO
-	public static void loadDicts() throws Exception{
+	private static void loadDicts() throws Exception{
 		cateDict = DictMakeUtil.makeCateDict(category);//观点分类词典读取
 		dict = DictMakeUtil.makeOpDict(dicts);//观点元素词典
 	}
@@ -245,15 +248,15 @@ public class OpMiningUtil {
 				if (segsplit.length != 2)
 					continue;
 				// 如果满足其他观点结束规则
-				if (otherEndRule(seg)){
+				if (otherEndRule(seg[j])){
 //-----------------------------------------------------------------割一下割一下割一下割一下割一下割一下-----------------------------------------------------------------
 					/* 异常结束，说明没有感情词。
 					 * 
 					 * ## 要把所有异常结束都放到这个方法里
 					 *  # 新 非并列产品（待定）
-					 *  # 新 非并列对象
-					 *  # 新 非并列属性
-					 *  # 一些特殊标点符号
+					 *  # 新 非并列对象(记录,可参考为中评)
+					 *  # 新 非并列属性(记录,可参考为中评)
+					 *  # 一些特殊标点符号(？！。?!)
 					 *  # 间隔过大
 					 *  # 达到seg.length
 					 * ## 必须清空所有队列
@@ -353,7 +356,8 @@ public class OpMiningUtil {
 					att_list.add(e);
 					int t = 0;
 					// 父亲是上层队列的首节点
-					if(asp_list.size()==0){
+					if(asp_list.size()==0 || e.getStart_index()-asp_list.get(0).getEnd_index()> maxgap2){
+						asp_list.clear();
 						if(pro_list.size()==0){
 							continue;
 						}
@@ -507,7 +511,7 @@ public class OpMiningUtil {
 	}
 
 	// 判断是否以异常结束一个观点提取过程
-	private static boolean otherEndRule(String[] seg) {
+	private static boolean otherEndRule(String seg) {
 		// TODO Auto-generated method stub
 		return false;
 	}
@@ -560,8 +564,7 @@ public class OpMiningUtil {
 	}
 	
 	// 评论对象分类
-	public static List<Opinion> aspectCategory(List<Opinion> oplist, List<String> cateDict)
-			throws Exception {
+	public static List<Opinion> aspectCategory(List<Opinion> oplist, List<String> cateDict){
 
 		List<Opinion> resultlist = new ArrayList<Opinion>();
 		for (Opinion op : oplist) {
@@ -571,7 +574,7 @@ public class OpMiningUtil {
 			Integer category = -1;
 			for (int i = 0; i < cateDict.size(); i++) {
 				float temp = 0;
-				if(op.getAspect().getContent()==null){
+				if(op.getAttribute().getContent()!=null){
 					//如果空,给属性分类
 					temp = W2vUtil.dist(w2v.getWordVector(op.getAttribute().getContent()), w2v.getWordVector(cateDict.get(i)));
 				}else{

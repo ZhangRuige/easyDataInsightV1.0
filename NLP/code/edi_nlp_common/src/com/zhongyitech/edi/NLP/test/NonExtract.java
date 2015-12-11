@@ -33,28 +33,28 @@ public class NonExtract {
 		for(Term t :list){
 			if(t.toString().length()>1 && t.toString().indexOf("/")!=-1){
 				String[] tempsplit = t.toString().split("/");
-				if(tempsplit[1].equals("en") || tempsplit[1].equals("m")){
-					tmp= tmp+tempsplit[0];
-					flag = 1;
-					continue;
-				}else if(flag == 1){
-					flag = 0;
-					if( (v = map.get(tmp)) !=null){
-						map.put(tmp, v+1);
-					}else{
-						map.put(tmp, 1);
-					}
-					tmp = new String();
-					continue;
-				}
-				
-//				if(tempsplit[1].equals("n")){
-//					if( (v = map.get(tempsplit[0])) !=null){
-//						map.put(tempsplit[0], v+1);
+//				if(tempsplit[1].equals("en") || tempsplit[1].equals("m")){
+//					tmp= tmp+tempsplit[0];
+//					flag = 1;
+//					continue;
+//				}else if(flag == 1){
+//					flag = 0;
+//					if( (v = map.get(tmp)) !=null){
+//						map.put(tmp, v+1);
 //					}else{
-//						map.put(tempsplit[0], 1);
+//						map.put(tmp, 1);
 //					}
+//					tmp = new String();
+//					continue;
 //				}
+				
+				if(tempsplit[1].equals("n")){
+					if( (v = map.get(tempsplit[0])) !=null){
+						map.put(tempsplit[0], v+1);
+					}else{
+						map.put(tempsplit[0], 1);
+					}
+				}
 			}
 		}
 		

@@ -33,7 +33,7 @@ public class JavaTest {
 //		String l2 = NewWordsDiscovery.getNewWords("F:\\share\\result",(float) 0.4);
 //		System.out.println(l2);
 //		NewWordsDiscovery.toNewWordsTxt();
-		
+//		
 //		String s = new String();
 //		try {
 //			s = IoUtil.readTxt("E:\\000000_0");
@@ -108,7 +108,14 @@ public class JavaTest {
 //		str2 = str2.replaceAll(" +", " ");
 //		IoUtil.writeToText(str2, path2);
 		
-		System.out.println(ToAnalysis.parse("note1"));
+//		List<Term> list1 = ToAnalysis.parse("CPU");
+//		OpMiningUtil.setStopWord("dicts/chinese_stopword.txt");//停用词典
+//		List<Term> list = FilterModifWord.modifResult(list1);//去停用词
+//		System.out.println(list.toString().substring(1, list.toString().length()-1).replaceAll("/[a-zA-Z]*,*", ""));
+		
+		System.out.println("\\啊".replaceAll("\\\\", ""));
+		
+		
 		
 	}
 
