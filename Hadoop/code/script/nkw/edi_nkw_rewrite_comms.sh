@@ -8,7 +8,7 @@ cd /opt/running/edi/op
 echo "START.$0"
 start_time=$(date +%s)
 cur_date=`date +%Y%m%d%H%M%S`
-
+source /etc/profile
 
 if [ $# -ne 1 ] ; then
 	echo "USAGE: $0 export_dir,use default export_dir 'data/blocks'"
@@ -40,7 +40,7 @@ FROM EDI_M_PROD_COMMS C JOIN(
 
 echo $hql
 
-/opt/running/apache-hive-1.2.1-bin/bin/hive -e "use edi;$hql"
+hive -e "use edi;$hql"
 
 if [ $? -ne 0 ];then
 	echo "ERROR:hiveQL exec failure."

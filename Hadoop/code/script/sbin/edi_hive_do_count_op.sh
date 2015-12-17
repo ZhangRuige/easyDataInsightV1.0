@@ -4,6 +4,8 @@ echo "START.$0"
 
 cur_date=`date +%Y%m%d%H%M%S`
 echo $cur_date
+
+source /etc/profile
 echo "running ..."
 
 hive -S -e "USE EDI;INSERT OVERWRITE TABLE EDI_M_R_AMOUNT PARTITION(PT_DATE='`echo $cur_date`')

@@ -5,9 +5,7 @@
 start_time=$(date +%s)
 cur_date=`date +%Y%m%d%H%M%S`
 echo ">>>START AT `hostname`.$cur_date"
-
-source /home/edi/.bashrc
-
+source /etc/profile
 echo "mapper running ..."
 
 read testfile
@@ -29,7 +27,7 @@ fi
 echo "pwd=`pwd`"
 
 echo "0.get train & test file is $testfile"
-/opt/running/hadoop-2.6.0/bin/hdfs dfs -get /edi/nkw/crf_template /edi/nkw/blocks ./
+hdfs dfs -get /edi/nkw/crf_template /edi/nkw/blocks ./
 echo $?
 
 echo "1.merging train files to train_$testfile ..."
@@ -47,18 +45,18 @@ echo "time cost(s) :$(( $(date +%s) - $start_time ))"
 
 
 echo "2.executting :crf_learn -f 3 -c 1.5 template_file train_file model_file"
-/usr/local/bin/crf_learn -c 2 -f 2000 crf_template train_$testfile model_$testfile > crf_log_$testfile
+crf_learn -c 2 -f 2000 crf_template train_$testfile model_$testfile > crf_log_$testfile
 echo $?
 #TODO fail skip
 echo "time cost(s) :$(( $(date +%s) - $start_time ))"
 
 echo "3.executting :crf_test -m model_file test_files"
-/usr/local/bin/crf_test -m model_$testfile blocks/$testfile > result_$testfile
+crf_test -m model_$testfile blocks/$testfile > result_$testfile
 echo $?
 #TODO fail skip
 
 echo "4.put result to hdfs."
-/opt/running/hadoop-2.6.0/bin/hdfs dfs -put result_$testfile /edi/nkw/result/
+hdfs dfs -put result_$testfile /edi/nkw/result/
 echo $?
 
 echo "time cost(s) :$(( $(date +%s) - $start_time ))"

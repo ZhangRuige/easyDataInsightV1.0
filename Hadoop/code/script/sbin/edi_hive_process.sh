@@ -1,10 +1,11 @@
 #!/bin/bash
 
 #处理一个map任务，输入是blocks中作为测试集的文件名，输出
-
+echo ""
 echo ">>>START .$0"
 start_time=$(date +%s)
 cur_date=`date +%Y%m%d%H%M%S`
+source /etc/profile
 echo "running ..."
 
 cd /opt/running/edi/sbin/

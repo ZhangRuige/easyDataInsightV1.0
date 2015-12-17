@@ -4,7 +4,7 @@ echo "START.$0"
 start_time=$(date +%s)
 cur_date=`date +%Y%m%d%H%M%S`
 echo $cur_date
-
+source /etc/profile
 
 tmp_file=tmp/edi_r_comm_tag_"$cur_date".td
 
