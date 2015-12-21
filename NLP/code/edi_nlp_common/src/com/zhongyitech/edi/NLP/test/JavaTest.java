@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.ansj.domain.Term;
+import org.ansj.library.UserDefineLibrary;
 import org.ansj.splitWord.analysis.BaseAnalysis;
 import org.ansj.splitWord.analysis.NlpAnalysis;
 import org.ansj.splitWord.analysis.ToAnalysis;
@@ -16,6 +17,7 @@ import org.ansj.util.FilterModifWord;
 import com.zhongyitech.edi.NLP.util.CreateCVBlocks;
 import com.zhongyitech.edi.NLP.util.DictMakeUtil;
 import com.zhongyitech.edi.NLP.util.IoUtil;
+import com.zhongyitech.edi.NLP.util.MergeSegments;
 import com.zhongyitech.edi.NLP.util.NewWordsDiscovery;
 import com.zhongyitech.edi.NLP.util.OpMiningUtil;
 import com.zhongyitech.edi.NLP.util.W2vUtil;
@@ -113,9 +115,12 @@ public class JavaTest {
 //		List<Term> list = FilterModifWord.modifResult(list1);//去停用词
 //		System.out.println(list.toString().substring(1, list.toString().length()-1).replaceAll("/[a-zA-Z]*,*", ""));
 		
-		System.out.println("\\啊".replaceAll("\\\\", ""));
 		
-		
+		UserDefineLibrary.insertWord("galaxy note 5", "userDefine", 1000);
+		List<Term> list = ToAnalysis.parse("苹果6s不错啊");
+//		list = MergeSegments.mergeEnNum(list);
+		list = MergeSegments.mergeNonEnNum(list);
+		System.out.println(list);
 		
 	}
 

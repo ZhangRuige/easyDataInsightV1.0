@@ -13,12 +13,12 @@ public class OmSaTest {
 		String str = IoUtil.readTxt("corpus/rawdata.txt");
 		
 		long s = System.currentTimeMillis();
-		List<Opinion> oplist = OpMiningUtil.doSa("玻璃好对焦好铃声好照片好电量大能力高", "iPhone");
+		List<Opinion> oplist = OpMiningUtil.doSa("费电\"速度很快 金属感强烈 很薄很轻\"", "iPhone");
 		long e = System.currentTimeMillis();
 		
 		for (int i = 0; i < oplist.size(); i++) {
 			System.out.println("op" + i + ":" + "\r\n\t产品：" + oplist.get(i).getProduct().getContent()
-					+ "\r\n\t评论对象一级分类词：" + oplist.get(i).getAspect().getContent()
+					+ "\r\n\t评论对象一级分类词：" + oplist.get(i).get_aspe()
 					+ "\r\n\t评论对象start：" + oplist.get(i).getAspect().getStart_index()
 					+ "\r\n\t评论对象end：" + oplist.get(i).getAspect().getEnd_index()
 					+ "\r\n\t评论对象二级分类词：" + oplist.get(i).getAttribute().getContent()
