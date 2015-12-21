@@ -57,7 +57,7 @@ public class Opinion {
 		if (product.getStart_index() == -1) {
 			if(aspect.getStart_index() == -1){
 				if(attribute.getStart_index() == -1){
-					return raw_data.substring(0, sentiment.getEnd_index() + 1);
+					return raw_data.substring(sentiment.getStart_index(), sentiment.getEnd_index() + 1);
 				}
 				return raw_data.substring(attribute.getStart_index(), sentiment.getEnd_index() + 1);
 			}else{
@@ -72,7 +72,7 @@ public class Opinion {
 		if (product.getStart_index() == -1) {
 			if(aspect.getStart_index() == -1){
 				if(attribute.getStart_index() == -1){
-					return 0;
+					return sentiment.getStart_index();
 				}
 				return attribute.getStart_index();
 			}else{
@@ -125,13 +125,13 @@ public class Opinion {
 	}
 	//一级分类还是一级分类
 	public String get_aspe() {
-//		return aspect.getAspect_category_centerword();
-		return aspect.getContent();
+		return aspect.getAspect_category_centerword();
+//		return aspect.getContent();
 	}
 	//二级分类是总分类
 	public String get_attr() {
 //		return attribute.getContent();
-		return aspect.getAspect_category_centerword();
+		return aspect.getAttr_category_centerword();
 	}
 
 	public String get_sent() {
