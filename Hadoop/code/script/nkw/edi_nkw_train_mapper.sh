@@ -5,9 +5,7 @@
 start_time=$(date +%s)
 cur_date=`date +%Y%m%d%H%M%S`
 echo ">>>START AT `hostname`.$cur_date"
-
-source /home/edi/.bashrc
-
+source /etc/profile
 echo "mapper running ..."
 
 read testfile
@@ -19,8 +17,6 @@ if [ -z "$testfile" ];then
 	exit 0;
 fi
 
-echo "test file is $testfile"
-
 #for no in {0..9}
 #do
 #	if [ $no != $testfile ];then
@@ -28,10 +24,10 @@ echo "test file is $testfile"
 #	fi
 #done
 
-pwd
+echo "pwd=`pwd`"
 
 echo "0.get train & test file is $testfile"
-hdfs dfs -get /edi/nkw/crf_template /edi/nkw/blocks
+hdfs dfs -get /edi/nkw/crf_template /edi/nkw/blocks ./
 echo $?
 
 echo "1.merging train files to train_$testfile ..."
