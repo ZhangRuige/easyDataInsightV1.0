@@ -47,14 +47,17 @@ public class ResultCountTest {
 		OpRes o = new OpRes();
 		List<OpRes> opres = new ArrayList<OpRes>();
 		for (int i = 0; i < list.size(); i++) {
-			System.out.println("op" + i + ":" + "\r\n\t评论ID：" + sentNo.get(i) + "\r\n\t产品：" + list.get(i).getProduct().getContent() + "\r\n\t评论对象："
-					+ list.get(i).getAspect().getContent() + "\r\n\t评论对象属性："
-					+ list.get(i).getAttribute().getContent() + "\r\n\t评论对象种类："
-					+ list.get(i).get_aspe() + "\r\n\t情感词："
-					+ list.get(i).getSentiment().getContent() + "\r\n\t否定词：" + list.get(i).getNeg_words()
-					+ "\r\n\t情感分类：" + list.get(i).getSentiment().getSentiment_category() + "\r\n\t观点句位置：["
-					+ list.get(i).getOp_start_index() + "," + list.get(i).getOp_end_index() + "]" + "\r\n\t观点句："
-					+ list.get(i).getOp_sent()
+			System.out.println("op" + i + ":" + "\r\n\t产品：" + list.get(i).getProduct().getContent()
+					+ "\r\n\t评论对象一级分类词：" + list.get(i).get_aspe()
+					+ "\r\n\t评论对象start：" + list.get(i).getAspect().getStart_index()
+					+ "\r\n\t评论对象end：" + list.get(i).getAspect().getEnd_index()
+					+ "\r\n\t评论对象二级分类词：" + list.get(i).getAttribute().getContent()
+					+ "\r\n\t评论对象种类：" + list.get(i).get_attr()
+					+ "\r\n\t情感词：" + list.get(i).getSentiment().getContent()
+					+ "\r\n\t否定词：" + list.get(i).getNeg_words()
+					+ "\r\n\t情感分类：" + list.get(i).getSentiment().getSentiment_category()
+					+ "\r\n\t观点句位置：[" + list.get(i).getOp_start_index() + "," + list.get(i).getOp_end_index() + "]"
+					+ "\r\n\t观点句：" + list.get(i).getOp_sent()
 					);
 			o = setCountResult(list,sentNo,i);
 			opres.add(o);
@@ -72,8 +75,8 @@ public class ResultCountTest {
 		// 观点和情感都正确
 		int count = 0; 
 		
-		int tag1[]=new int[99];
-		int tag2[]=new int[99];
+		int tag1[]=new int[111];
+		int tag2[]=new int[111];
 		Arrays.fill(tag1, 999);
 		Arrays.fill(tag2, 999);
 		
@@ -136,7 +139,8 @@ public class ResultCountTest {
 		OpRes op = new OpRes();
 		op.setSentId(sentNo.get(i));
 		op.setWord(list.get(i).getAspect().getContent());
-		op.setAspect(list.get(i).get_aspe());
+//		op.setAspect(list.get(i).get_aspe());
+		op.setAspect(list.get(i).get_attr());
 		op.setValue(Integer.parseInt(list.get(i).get_opsa()));
 		
 		return op;

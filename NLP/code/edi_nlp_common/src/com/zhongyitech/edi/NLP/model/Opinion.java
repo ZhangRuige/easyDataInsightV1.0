@@ -12,6 +12,9 @@ public class Opinion {
 
 	private String raw_data;
 
+	private static int maxleft = 3;
+	private static int maxright = 1;
+	
 	public OpElement getProduct() {
 		return product;
 	}
@@ -91,19 +94,20 @@ public class Opinion {
 		if (product.getStart_index() == -1) {
 			if(aspect.getStart_index() == -1){
 				if(attribute.getStart_index() == -1){
+//					return sentiment.getTerm_index()-maxleft;
 					return 0;
 				}
-				return attribute.getTerm_index();
+				return attribute.getTerm_index()-maxleft;
 			}else{
-				return aspect.getTerm_index();
+				return aspect.getTerm_index()-maxleft;
 			}
 		} else {
-			return product.getTerm_index();
+			return product.getTerm_index()-maxleft;
 		}
 	}
 
 	public int getTerm_end_index() {
-		return sentiment.getTerm_index();
+		return sentiment.getTerm_index()+maxright;
 	}
 
 	// 获得情感值
