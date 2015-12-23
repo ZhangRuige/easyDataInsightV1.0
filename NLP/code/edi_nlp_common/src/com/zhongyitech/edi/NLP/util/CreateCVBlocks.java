@@ -13,7 +13,17 @@ import com.zhongyitech.edi.NLP.model.CRFTag;
 
 public class CreateCVBlocks {
 	
-	private static String[] dicts = {"dicts/dict0.txt","dicts/dict1.txt","dicts/dict2.txt","dicts/dict3.txt","dicts/dict4.txt","dicts/dict5.txt"};
+	private static String[] dicts = 
+		{
+		"dicts/dict0.txt",
+		"dicts/dict1.txt",
+		"dicts/dict2.txt",
+		"dicts/dict3.txt",
+		"dicts/dict4.txt",
+		"dicts/dict5.txt",
+		"dicts/dict6.txt",
+		"dicts/dict-1.txt"
+		};
 	
 	// 总块数
 	private static int cross_validate_k = 10;
@@ -51,7 +61,7 @@ public class CreateCVBlocks {
 		File file = new File(str);
 		long flen = file.length();
 		// 限制每一块的大概大小，300k左右
-		Integer t = (int) (flen/290*block_size)+1;
+		Integer t = (int) (flen/300/block_size)+1;
 		System.out.println(t);
 		cross_validate_k = t;
 		
@@ -401,7 +411,7 @@ public class CreateCVBlocks {
 			}
 			t++;
 		}
-		String path0 = string+"/blocks_00/block00";
+		String path0 = string+"/blocks_0/block00";
 		File f = new File(path0);
 		return f.length();
 	}
