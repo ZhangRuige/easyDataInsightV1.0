@@ -42,8 +42,6 @@ public class OpMiningUtil {
 	private static List<String> cateDict = null;
 	private static String[] dict = null;
 	
-	// 观点树
-	private static List<OpTreeNode> opTree = new ArrayList<OpTreeNode>();
 	// 产品队列
 	private static List<OpElement> pro_list = new ArrayList<>();
 	// 对象队列
@@ -90,11 +88,13 @@ public class OpMiningUtil {
 			}
 			w2vflag=1;
 		}
-		try {
-			loadDicts();
-		} catch (Exception e1) {
-			System.out.println("二级属性分类发生错误，读取二级分类词典失败");
-			e1.printStackTrace();
+		if(cateDict==null || dict==null){
+			try {
+				loadDicts();
+			} catch (Exception e1) {
+				System.out.println("二级属性分类发生错误，读取二级分类词典失败");
+				e1.printStackTrace();
+			}
 		}
 		String d1 = new String();
 		try {
@@ -104,8 +104,10 @@ public class OpMiningUtil {
 			e.printStackTrace();
 		}
 		String[] d1s = d1.substring(1, d1.length()-1).split("/");
-		for (int i = 0; i < d1s.length; i++){
-			pri_cate_dict.add(d1s[i]);
+		if(pri_cate_dict.size()==0){
+			for (int i = 0; i < d1s.length; i++){
+				pri_cate_dict.add(d1s[i]);
+			}
 		}
 		Integer category;
 		float maxd;
@@ -138,9 +140,6 @@ public class OpMiningUtil {
 		if(words==null){
 			return new ArrayList<>();
 		}
-		if(opTree!=null){
-			opTree.clear();
-		}
 		if(pro_list!=null){
 			pro_list.clear();
 		}
@@ -150,8 +149,6 @@ public class OpMiningUtil {
 		if(att_list!=null){
 			att_list.clear();
 		}
-		
-		pri_category = setPriCategory();
 		
 		String words1 = preTreatWords(words);
 		if(w2vflag==0){
@@ -163,6 +160,11 @@ public class OpMiningUtil {
 		}
 		DictMakeUtil.modifyDict(dict,"/");//分词词典
 		DictMakeUtil.modifyDict(cateDict);//分词词典
+		
+		// 放在读取w2v模型的后面！
+		if(pri_category.size()==0){
+			pri_category = setPriCategory();
+		}
 		
 		List<Term> list1 = new ArrayList<Term>();
 		
@@ -209,8 +211,8 @@ public class OpMiningUtil {
 	// 观点提取
 	public static List<Opinion> opMining(String w, String[] dict, List<Term> list, String p){
 		
-		opTreeConstruct(w,dict,list,p);
-		return sentimentAnalysis(dict,opExtract(w,list,dict));
+		List<OpTreeNode> opTree = opTreeConstruct(w,dict,list,p);
+		return sentimentAnalysis(dict,opExtract(w,list,dict,opTree));
 		
 	}
 	
@@ -226,7 +228,7 @@ public class OpMiningUtil {
 	}
 
 	// 从观点树提取观点
-	private static List<Opinion> opExtract(String w, List<Term> list, String[] dict) {
+	private static List<Opinion> opExtract(String w, List<Term> list, String[] dict, List<OpTreeNode> opTree) {
 		
 		StringBuffer s = new StringBuffer();
 		for (int i = 0; i < list.size(); i++) {
@@ -309,7 +311,7 @@ public class OpMiningUtil {
 			s.append(list.get(i).toString() + " ");
 		}
 
-//		List<OpTreeNode> opTree = new ArrayList<OpTreeNode>();
+		List<OpTreeNode> opTree = new ArrayList<OpTreeNode>();
 		opTree.add(new OpTreeNode());
 		int treeIndex = 1;
 		int pro_flag = 0;
