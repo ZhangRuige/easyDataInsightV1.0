@@ -16,8 +16,12 @@ if [ $ecode -ne 0 ];then
 fi
 
 
-echo "1.TRUNCATE mysql EDI.M_CONSUMER_DIST."
-ssh HadoopMySQL mysql -u edi -pedi@zy11 -e "USE edi;DELETE FROM M_CONSUMER_DIST;"
+echo "1.TRUNCATE mysql edi.M_CONSUMER_DIST."
+mysql -h HadoopMySQL -u edi -pedi@zy11 -e "use edi;DELETE FROM edi.M_CONSUMER_DIST;"
+if [ $? -ne 0 ];then
+	echo "ERROR:DELETE FROM edi.M_CONSUMER_DIST; exit"
+	exit 1
+fi 
 
 echo "2,overwrite EDI_M_CONSUMER_DIST to mysql..."
 file="/user/hive/warehouse/edi.db/edi_m_consumer_dist/"
