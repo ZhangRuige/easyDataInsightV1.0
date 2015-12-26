@@ -18,7 +18,10 @@ public class ToCVBlocks {
 		}
 		
 		List<String> l = CreateCVBlocks.getTrainData(args[0]);
-		CreateCVBlocks.toCVBlocksTxt(l,args[1]);
+		Long length = CreateCVBlocks.toCVBlocksTxts(l,args[1]);
+		int kbs = (int) (length/1024);
+		// 打印CRF模型的参数f
+		System.out.println("f_value="+kbs*10);
 	}
 
 }

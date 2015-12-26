@@ -1,5 +1,6 @@
 package com.zhongyitech.edi.NLP.util;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -21,13 +22,39 @@ public class OpMiningUtil {
 	/*
 	 * dicts... 0品牌词 1对象词 2属性词 3正面词 4负面词 5否定词
 	 */
-	private static String[] dicts = {"dicts/dict0.txt","dicts/dict1.txt","dicts/dict2.txt","dicts/dict3.txt","dicts/dict4.txt","dicts/dict5.txt"};
+	private static String[] dicts = 
+		{
+		"dicts/dict0.txt",
+		"dicts/dict1.txt",
+		"dicts/dict2.txt",
+		"dicts/dict3.txt",
+		"dicts/dict4.txt",
+		"dicts/dict5.txt",
+		"dicts/dict6.txt",
+		"dicts/dict-1.txt"
+		};
 	private static String category = "dicts/categoryDicts.txt";
 	private static String corpus = "corpus/w2vTrainSet.txt";
+	
 	private static String stpwdict = "dicts/stopWordDict.txt";
+//	private static String stpwdict = "dicts/chinese_stopword.txt";
 	
 	private static List<String> cateDict = null;
-	private static String[] dict =null;
+	private static String[] dict = null;
+	
+	// 产品队列
+	private static List<OpElement> pro_list = new ArrayList<>();
+	// 对象队列
+	private static List<OpElement> asp_list = new ArrayList<>();
+	// 属性队列
+	private static List<OpElement> att_list = new ArrayList<>();
+//	// 情感词队列
+//	private static List<OpElement> sen_list = new ArrayList<>();
+	
+	// 每个二级分类的一级类别序号
+	private static List<Integer> pri_category = new ArrayList<>();
+	
+	private static List<String> pri_cate_dict = new ArrayList<>();
 	
 	private static Word2VEC w2v = new Word2VEC();
 	private static int w2vflag = 0;
@@ -35,9 +62,11 @@ public class OpMiningUtil {
 	private static int[] lastTermLevel = {0,0};
 	
 	//对象分类相似度阈值
-	private static float similarity = (float) 0.35 ;
+	private static float similarity = (float) 0.3;
 	//观点句最大间隔
 	private static int maxgap = 10;
+	//一、二级分类最大间隔
+	private static int maxgap2 = 3;
 	/* 分词种类:
 	 * 1BaseAnalysis
 	 * 2ToAnalysis
@@ -48,16 +77,79 @@ public class OpMiningUtil {
 	public static void trainModel() throws Exception{
 		W2vUtil.word2vecModelTrain(corpus);
 	}
+	private static List<Integer> setPriCategory() {
+		List<Integer> res = new ArrayList<>();
+		if(w2vflag==0){
+			try {
+				w2v.loadJavaModel("model/vector.mod");
+			} catch (IOException e) {
+				System.out.println("二级属性分类发生错误，读取w2v模型失败");
+				e.printStackTrace();
+			}
+			w2vflag=1;
+		}
+		if(cateDict==null || dict==null){
+			try {
+				loadDicts();
+			} catch (Exception e1) {
+				System.out.println("二级属性分类发生错误，读取二级分类词典失败");
+				e1.printStackTrace();
+			}
+		}
+		String d1 = new String();
+		try {
+			d1 = IoUtil.readTxt(dicts[1]);
+		} catch (Exception e) {
+			System.out.println("二级属性分类发生错误，读取一级分类词典失败");
+			e.printStackTrace();
+		}
+		String[] d1s = d1.substring(1, d1.length()-1).split("/");
+		if(pri_cate_dict.size()==0){
+			for (int i = 0; i < d1s.length; i++){
+				pri_cate_dict.add(d1s[i]);
+			}
+		}
+		Integer category;
+		float maxd;
+		for (int i = 0; i < cateDict.size(); i++) {
+			category = -1;
+			maxd = 0;
+			for(int j = 0; j<pri_cate_dict.size();j++){
+				float temp = 0;
+					temp = W2vUtil.dist(w2v.getWordVector(pri_cate_dict.get(j)),w2v.getWordVector(cateDict.get(i)));
+				if(temp > similarity){
+					boolean b = temp > maxd;
+					maxd = b ? temp : maxd;
+					category = b ? j : category;
+				}
+			}
+			res.add(category);
+		}
+		return res;
+	}
 	public static void trainModel(String file) throws Exception{
 		W2vUtil.word2vecModelTrain(file);
 	}
 	// 避免多次IO
-	public static void loadDicts() throws Exception{
+	private static void loadDicts() throws Exception{
 		cateDict = DictMakeUtil.makeCateDict(category);//观点分类词典读取
 		dict = DictMakeUtil.makeOpDict(dicts);//观点元素词典
 	}
 	
 	public static List<Opinion> doSa(String words,String product) throws Exception{
+		if(words==null){
+			return new ArrayList<>();
+		}
+		if(pro_list!=null){
+			pro_list.clear();
+		}
+		if(asp_list!=null){
+			asp_list.clear();
+		}
+		if(att_list!=null){
+			att_list.clear();
+		}
+		
 		String words1 = preTreatWords(words);
 		if(w2vflag==0){
 			w2v.loadJavaModel("model/vector.mod");
@@ -68,6 +160,11 @@ public class OpMiningUtil {
 		}
 		DictMakeUtil.modifyDict(dict,"/");//分词词典
 		DictMakeUtil.modifyDict(cateDict);//分词词典
+		
+		// 放在读取w2v模型的后面！
+		if(pri_category.size()==0){
+			pri_category = setPriCategory();
+		}
 		
 		List<Term> list1 = new ArrayList<Term>();
 		
@@ -83,15 +180,15 @@ public class OpMiningUtil {
 		setStopWord(stpwdict);
 		List<Term> list = FilterModifWord.modifResult(list1);//去停用词
 		List<Opinion> oplist = OpMiningUtil.opMining(words, dict ,list, product);//观点提取
-		oplist = OpMiningUtil.aspectCategory(oplist,cateDict);//观点对象分类
+		oplist = OpMiningUtil.aspectCategory(oplist);//观点对象分类,包括一级二级分类
 		
 //		System.out.println(oplist.size());
 		
 		return oplist;
-		
 	}
 	
-	private static void setStopWord(String stw) throws Exception {
+	// 去停用词
+	public static void setStopWord(String stw) throws Exception {
 
 		String str = IoUtil.readTxt(stpwdict);
 		String[] ss = str.split("\n");
@@ -111,9 +208,6 @@ public class OpMiningUtil {
 		return words1;
 	}
 	
-	// 去停用词
-	
-	
 	// 观点提取
 	public static List<Opinion> opMining(String w, String[] dict, List<Term> list, String p){
 		
@@ -127,6 +221,7 @@ public class OpMiningUtil {
 		
 		for(Opinion op : opExtract){
 			int neg = op.getNeg_words().size()%2;
+			op.getSentiment().setSentiment_value(op.getSentiment().getSentiment_value()*(neg==0?1:-1));
 			op.getSentiment().setSentiment_category(op.getSentiment().getSentiment_value()*(neg==0?1:-1)>0?"positive":"negative");
 		}
 		return opExtract;
@@ -146,8 +241,7 @@ public class OpMiningUtil {
 			String[] segsplit = seg[i].split("/");
 			if (segsplit.length != 2)
 				continue;
-			if (dict[5].contains("/" + segsplit[0] + "/")) {
-				
+			if (dict[dict.length-1].contains("/" + segsplit[0] + "/")) {
 				neg_words[i] = segsplit[0];
 				continue;
 			}
@@ -161,16 +255,25 @@ public class OpMiningUtil {
 			op.setProduct(new OpElement());
 			op.setAspect(new OpAspElement());
 			op.setAttribute(new OpElement());
-			do{
-				op = setOpinion(op,node);
-				node = opTree.get(node.getParents_id());
-			}while(node.getNode_depth()!=0);
+			try{
+				do{
+					op = setOpinion(op,node);
+					node = opTree.get(node.getParents_id());
+				}while(node.getNode_depth()!=0);
+			}catch(Exception e){
+				System.out.println(w);
+			}
 			
 			// 保存否定词
 			List<String> ngws = new ArrayList<String>();
-			for(int i = op.getTerm_start_index();i<op.getTerm_end_index();i++){
+			int start = op.getTerm_start_index()>0?op.getTerm_start_index():0;
+			int end = op.getTerm_end_index()<list.size()?op.getTerm_end_index():list.size();
+			for(int i = start;i<end;i++){
 				if(neg_words[i]!=null)
 					ngws.add(neg_words[i]);
+				if(list.get(i).getName().equals("，")||list.get(i).getName().equals("。")){
+					ngws.clear();
+				}
 			}
 			op.setNeg_words(ngws);
 			op.setRaw_data(w);
@@ -193,6 +296,9 @@ public class OpMiningUtil {
 			case 4:
 				op.setSentiment((OpSentiElement) n.getNode_element());
 				break;
+			case 5:
+				op.setSentiment((OpSentiElement) n.getNode_element());
+				break;
 		}
 		return op;
 	}
@@ -210,6 +316,7 @@ public class OpMiningUtil {
 		int treeIndex = 1;
 		int pro_flag = 0;
 		int fromIndex = 0;
+		/*改成静态
 		// 产品队列
 		List<OpElement> pro_list = new ArrayList<>();
 		// 对象队列
@@ -218,7 +325,7 @@ public class OpMiningUtil {
 		List<OpElement> att_list = new ArrayList<>();
 //		// 情感词队列
 //		List<OpElement> sen_list = new ArrayList<>();
-		
+		*/
 		String product = p;
 		// 外部有指定的产品品牌型号
 		if (product!=null && !product.equals("")) {
@@ -241,23 +348,19 @@ public class OpMiningUtil {
 				if (segsplit.length != 2)
 					continue;
 				// 如果满足其他观点结束规则
-				if (otherEndRule(seg)){
-//-----------------------------------------------------------------割一下割一下割一下割一下割一下割一下-----------------------------------------------------------------
+				if (otherEndRule(segsplit)){
 					/* 异常结束，说明没有感情词。
-					 * 
 					 * ## 要把所有异常结束都放到这个方法里
-					 *  # 新 非并列产品（待定）
-					 *  # 新 非并列对象
-					 *  # 新 非并列属性
-					 *  # 一些特殊标点符号
-					 *  # 间隔过大
-					 *  # 达到seg.length
 					 * ## 必须清空所有队列
 					 * ## continue,重新开始提取新观点
 					 */
+					if(pro_flag!=-1){
+						pro_list.clear();
+					}
+					asp_list.clear();
+					att_list.clear();
 					continue;
 				}
-//=================================================================割一下割一下割一下割一下割一下割一下=================================================================
 				
 				// 否则按正常结束判断
 				// 如果是产品
@@ -295,41 +398,41 @@ public class OpMiningUtil {
 					}
 				}
 				// 是标点符号?
-				// 是对象
-				else if (dict[1].contains("/" + segsplit[0] + "/")) {
-					// 不是并列不是比较（就是新的对象）
-					if(!isPara(seg, j, 2)&&!isComp()){
-						// 清空列表
-						asp_list.clear();
-					}
-					if(isComp()){
-						continue;
-					}
-					OpElement e = new OpAspElement();
-					int temp = w.indexOf(segsplit[0], fromIndex);
-					fromIndex = temp - 1 + segsplit[0].length();
-					e.setOpElementInfos(segsplit[0], String.valueOf(temp),
-							String.valueOf(fromIndex), treeIndex);
-					e.setTerm_index(j);
-					asp_list.add(e);
-					// 清空所有更低级的队列
-					att_list.clear();
-					if(pro_list.size()==0)
-						continue;
-					int t = 0;
-					// 对上层队列的所有元素新增孩子节点
-					while(t<pro_list.size()){
-						// 父亲是上层队列的首节点
-						int parents = pro_list.get(t++).getTree_index();
-						OpTreeNode node = new OpTreeNode(treeIndex++);
-						node.setNodeInfos(e, String.valueOf(parents), "2", null);
-						opTree.add(node);
-					}
-					
-					lastTermLevel[0]=lastTermLevel[1];
-					lastTermLevel[1]=2;
-					continue;
-				}
+//				// 是对象
+//				else if (dict[1].contains("/" + segsplit[0] + "/")) {
+//					// 不是并列不是比较（就是新的对象）
+//					if(!isPara(seg, j, 2)&&!isComp()){
+//						// 清空列表
+//						asp_list.clear();
+//					}
+//					if(isComp()){
+//						continue;
+//					}
+//					OpElement e = new OpAspElement();
+//					int temp = w.indexOf(segsplit[0], fromIndex);
+//					fromIndex = temp - 1 + segsplit[0].length();
+//					e.setOpElementInfos(segsplit[0], String.valueOf(temp),
+//							String.valueOf(fromIndex), treeIndex);
+//					e.setTerm_index(j);
+//					asp_list.add(e);
+//					// 清空所有更低级的队列
+//					att_list.clear();
+//					if(pro_list.size()==0)
+//						continue;
+//					int t = 0;
+//					// 对上层队列的所有元素新增孩子节点
+//					while(t<pro_list.size()){
+//						// 父亲是上层队列的首节点
+//						int parents = pro_list.get(t++).getTree_index();
+//						OpTreeNode node = new OpTreeNode(treeIndex++);
+//						node.setNodeInfos(e, String.valueOf(parents), "2", null);
+//						opTree.add(node);
+//					}
+//					
+//					lastTermLevel[0]=lastTermLevel[1];
+//					lastTermLevel[1]=2;
+//					continue;
+//				}
 				// 是属性
 				else if (dict[2].contains("/" + segsplit[0] + "/")) {
 					// 不是并列不是比较
@@ -349,7 +452,8 @@ public class OpMiningUtil {
 					att_list.add(e);
 					int t = 0;
 					// 父亲是上层队列的首节点
-					if(asp_list.size()==0){
+					if(asp_list.size()==0 || e.getStart_index()-asp_list.get(0).getEnd_index()> maxgap2){
+						asp_list.clear();
 						if(pro_list.size()==0){
 							continue;
 						}
@@ -391,48 +495,55 @@ public class OpMiningUtil {
 					if(att_list.size()==0){
 						if(asp_list.size()==0){
 							if(pro_list.size()==0 || pro_flag == -1){
-								continue;
+//								continue;
+								fromIndex--;
 							}
 							// 如果和观点对象距离太远，则放弃
-							if(e.getStart_index()-pro_list.get(0).getEnd_index()> maxgap)
+							else if(e.getStart_index()-pro_list.get(0).getEnd_index()> maxgap)
 								continue;
 //							editAll(e,pro_list,"3",treeIndex,opTree);
-							while(t<pro_list.size()){
-								int parents = pro_list.get(t++).getTree_index();
+							else{
+								while(t<pro_list.size()){
+									int parents = pro_list.get(t++).getTree_index();
+									OpTreeNode node = new OpTreeNode(treeIndex++);
+									node.setNodeInfos(e, String.valueOf(parents), "4", "true");
+									opTree.add(node);
+								}
+								if(pro_flag!=-1){
+									pro_list.clear();
+								}
+								continue;
+							}
+						}
+						else{
+							// 如果和观点对象距离太远，则放弃
+							if(e.getStart_index()-asp_list.get(0).getEnd_index()> maxgap)
+								continue;
+							while(t<asp_list.size()){
+								int parents = asp_list.get(t++).getTree_index();
 								OpTreeNode node = new OpTreeNode(treeIndex++);
 								node.setNodeInfos(e, String.valueOf(parents), "4", "true");
 								opTree.add(node);
 							}
-							if(pro_flag!=-1){
-								pro_list.clear();
-							}
+							asp_list.clear();
 							continue;
 						}
+					}
+					else{
 						// 如果和观点对象距离太远，则放弃
-						if(e.getStart_index()-asp_list.get(0).getEnd_index()> maxgap)
+						if(e.getStart_index()-att_list.get(0).getEnd_index()> maxgap)
 							continue;
-						while(t<asp_list.size()){
-							int parents = asp_list.get(t++).getTree_index();
+						// 对上层队列的所有元素新增孩子节点
+						while(t<att_list.size()){
+							int parents = att_list.get(t++).getTree_index();
 							OpTreeNode node = new OpTreeNode(treeIndex++);
 							node.setNodeInfos(e, String.valueOf(parents), "4", "true");
 							opTree.add(node);
 						}
 						asp_list.clear();
+						att_list.clear();
 						continue;
 					}
-					// 如果和观点对象距离太远，则放弃
-					if(e.getStart_index()-att_list.get(0).getEnd_index()> maxgap)
-						continue;
-					// 对上层队列的所有元素新增孩子节点
-					while(t<att_list.size()){
-						int parents = att_list.get(t++).getTree_index();
-						OpTreeNode node = new OpTreeNode(treeIndex++);
-						node.setNodeInfos(e, String.valueOf(parents), "4", "true");
-						opTree.add(node);
-					}
-					asp_list.clear();
-					att_list.clear();
-					continue;
 				}
 				//是负情感
 				else if (dict[4].contains("/" + segsplit[0] + "/")) {
@@ -452,44 +563,115 @@ public class OpMiningUtil {
 					if(att_list.size()==0){
 						if(asp_list.size()==0){
 							if(pro_list.size()==0 || pro_flag == -1){
-								continue;
+//								continue;
+								fromIndex--;
 							}
 //							editAll(e,pro_list,"3",treeIndex,opTree);
 							// 如果和观点对象距离太远，则放弃
-							if(e.getStart_index()-pro_list.get(0).getEnd_index()> maxgap)
+							else if(e.getStart_index()-pro_list.get(0).getEnd_index()> maxgap)
 								continue;
-							while(t<pro_list.size()){
-								int parents = pro_list.get(t++).getTree_index();
+							else{
+								while(t<pro_list.size()){
+									int parents = pro_list.get(t++).getTree_index();
+									OpTreeNode node = new OpTreeNode(treeIndex++);
+									node.setNodeInfos(e, String.valueOf(parents), "4", "true");
+									opTree.add(node);
+								}
+								if(pro_flag!=-1){
+									pro_list.clear();
+								}
+								continue;
+							}
+						}
+						else{
+							// 如果和观点对象距离太远，则放弃
+							if(e.getStart_index()-asp_list.get(0).getEnd_index()>maxgap)
+								continue;
+							while(t<asp_list.size()){
+								int parents = asp_list.get(t++).getTree_index();
 								OpTreeNode node = new OpTreeNode(treeIndex++);
 								node.setNodeInfos(e, String.valueOf(parents), "4", "true");
 								opTree.add(node);
 							}
-							if(pro_flag!=-1){
-								pro_list.clear();
-							}
+							asp_list.clear();
 							continue;
 						}
+					}
+					else{
 						// 如果和观点对象距离太远，则放弃
-						if(e.getStart_index()-asp_list.get(0).getEnd_index()>maxgap)
+						if(e.getStart_index()-att_list.get(0).getEnd_index()>maxgap)
 							continue;
-						while(t<asp_list.size()){
-							int parents = asp_list.get(t++).getTree_index();
+						// 对上层队列的所有元素新增孩子节点
+						while(t<att_list.size()){
+							int parents = att_list.get(t++).getTree_index();
 							OpTreeNode node = new OpTreeNode(treeIndex++);
 							node.setNodeInfos(e, String.valueOf(parents), "4", "true");
 							opTree.add(node);
 						}
 						asp_list.clear();
+						att_list.clear();
 						continue;
 					}
+				}
+				//是单独正观点词
+				if (dict[5].contains("/" + segsplit[0] + "/")) {
+					lastTermLevel[0]=lastTermLevel[1];
+					lastTermLevel[1]=4;
+					// 情感是最后一层,不判断是否并列
+					OpSentiElement e = new OpSentiElement();
+					int temp = w.indexOf(segsplit[0], fromIndex);
+					fromIndex = temp - 1 + segsplit[0].length();
+					e.setOpElementInfos(segsplit[0], String.valueOf(temp),
+							String.valueOf(fromIndex), treeIndex);
+					e.setSentiment_value(1);
+					e.setTerm_index(j);
+//					sen_list.add(e);
+					// 父亲是上层队列的首节点
+					int t = 0;
+//					editAll(e,pro_list,"3",treeIndex,opTree);
 					// 如果和观点对象距离太远，则放弃
-					if(e.getStart_index()-att_list.get(0).getEnd_index()>maxgap)
+					if(pro_list.get(0).getEnd_index()!=-1 && e.getStart_index()-pro_list.get(0).getEnd_index()> maxgap)
 						continue;
-					// 对上层队列的所有元素新增孩子节点
-					while(t<att_list.size()){
-						int parents = att_list.get(t++).getTree_index();
+					while(t<pro_list.size()){
+						int parents = pro_list.get(t++).getTree_index();
 						OpTreeNode node = new OpTreeNode(treeIndex++);
-						node.setNodeInfos(e, String.valueOf(parents), "4", "true");
+						node.setNodeInfos(e, String.valueOf(parents), "5", "true");
 						opTree.add(node);
+					}
+					if(pro_flag!=-1){
+						pro_list.clear();
+					}
+					asp_list.clear();
+					att_list.clear();
+					continue;
+				}
+				//是单独负观点词
+				if (dict[6].contains("/" + segsplit[0] + "/")) {
+					lastTermLevel[0]=lastTermLevel[1];
+					lastTermLevel[1]=4;
+					// 情感是最后一层,不判断是否并列
+					OpSentiElement e = new OpSentiElement();
+					int temp = w.indexOf(segsplit[0], fromIndex);
+					fromIndex = temp - 1 + segsplit[0].length();
+					e.setOpElementInfos(segsplit[0], String.valueOf(temp),
+							String.valueOf(fromIndex), treeIndex);
+					e.setSentiment_value(-1);
+					e.setTerm_index(j);
+//					sen_list.add(e);
+					// 父亲是上层队列的首节点
+					int t = 0;
+//					editAll(e,pro_list,"3",treeIndex,opTree);
+					// 如果和观点对象距离太远，则放弃
+					if(pro_list.get(0).getEnd_index()!=-1 && e.getStart_index()-pro_list.get(0).getEnd_index()> maxgap)
+						continue;
+					while(t<pro_list.size()){
+						int parents = pro_list.get(t++).getTree_index();
+						OpTreeNode node = new OpTreeNode(treeIndex++);
+						node.setNodeInfos(e, String.valueOf(parents), "5", "true");
+						opTree.add(node);
+					}
+					if(pro_flag!=-1){
+						pro_list.clear();
 					}
 					asp_list.clear();
 					att_list.clear();
@@ -503,8 +685,32 @@ public class OpMiningUtil {
 	}
 
 	// 判断是否以异常结束一个观点提取过程
-	private static boolean otherEndRule(String[] seg) {
+	private static boolean otherEndRule(String[] segsplit) {
 		// TODO Auto-generated method stub
+		/* 异常结束，说明没有感情词。
+		 * 
+		 * ## 要把所有异常结束都放到这个方法里
+		 *  # 新 非并列产品（待定）
+		 *  # 新 非并列对象(记录,可参考为中评)
+		 *  # 新 非并列属性(记录,可参考为中评)
+		 *  # 一些特殊标点符号(？！。?!)
+		 *  # 间隔过大
+		 *  # 达到seg.length
+		 * ## 必须清空所有队列
+		 * ## continue,重新开始提取新观点
+		 */
+		if(segsplit[0].equals("!") ||segsplit[0].equals("！") || segsplit[0].equals("?") ||segsplit[0].equals("？")){
+			return true;
+		}
+		if(false){
+			return true;
+		}
+		if(false){
+			return true;
+		}
+		if(false){
+			return true;
+		}
 		return false;
 	}
 	//
@@ -556,33 +762,70 @@ public class OpMiningUtil {
 	}
 	
 	// 评论对象分类
-	public static List<Opinion> aspectCategory(List<Opinion> oplist, List<String> cateDict)
-			throws Exception {
+	public static List<Opinion> aspectCategory(List<Opinion> oplist){
 
 		List<Opinion> resultlist = new ArrayList<Opinion>();
+		
 		for (Opinion op : oplist) {
-//			float maxd = 999999;
-//			Integer category = 999999;
-			float maxd = 0;
-			Integer category = -1;
-			for (int i = 0; i < cateDict.size(); i++) {
-				float temp = 0;
-				if(op.getAspect().getContent()==null){
-					//如果空,给属性分类
-					temp = W2vUtil.dist(w2v.getWordVector(op.getAttribute().getContent()), w2v.getWordVector(cateDict.get(i)));
-				}else{
-					//给对象分类
-					temp = W2vUtil.dist(w2v.getWordVector(op.getAspect().getContent()), w2v.getWordVector(cateDict.get(i)));
+			float maxd1 = 0;
+			Integer category1 = -1;
+			float maxd2 = 0;
+			Integer category2 = -1;
+			// 单词成观点的
+			if(op.getAttribute().getContent()==null && op.getAspect().getContent()==null){
+				for (int i = 0; i < cateDict.size(); i++) {
+					if(op.getSentiment().getContent().equals(cateDict.get(i))){
+						category1 = i;
+						break;
+					}
+					float temp = 0;
+					temp = W2vUtil.dist(w2v.getWordVector(op.getSentiment().getContent()), w2v.getWordVector(cateDict.get(i)));
+					if(temp > similarity){
+						boolean b = temp > maxd1;
+						maxd1 = b ? temp : maxd1;
+						category1 = b ? i : category1;
+					}
 				}
+				op.getAspect().setAspect_category(category1);
+				op.getAspect().setAttr_category_centerword(cateDict);
+				for (int i = 0; i < pri_cate_dict.size(); i++) {
+					float temp = 0;
+					temp = W2vUtil.dist(w2v.getWordVector(op.getAspect().getAttr_category_centerword()), w2v.getWordVector(pri_cate_dict.get(i)));
+					// 1级分类相似度调整
+					if(temp > similarity+0.05){
+						boolean b = temp > maxd2;
+						maxd2 = b ? temp : maxd2;
+						category2 = b ? i : category2;
+					}
+				}
+				op.getAspect().setAspect_category_centerword(pri_cate_dict,category2);
+			}
+			else{
+				// 对象+情感成观点的
+				for (int i = 0; i < cateDict.size(); i++) {
+					float temp = 0;
+					if(op.getAttribute().getContent()!=null){
+						//如果不空,给属性分类
+						temp = W2vUtil.dist(w2v.getWordVector(op.getAttribute().getContent()), w2v.getWordVector(cateDict.get(i)));
+					}else{
+						//给对象分类
+						temp = W2vUtil.dist(w2v.getWordVector(op.getAspect().getContent()), w2v.getWordVector(cateDict.get(i)));
+					}
 //				boolean b = temp < maxd;
-				if(temp > similarity){
-					boolean b = temp > maxd;
-					maxd = b ? temp : maxd;
-					category = b ? i : category;
+					if(temp > similarity){
+						boolean b = temp > maxd1;
+						maxd1 = b ? temp : maxd1;
+						category1 = b ? i : category1;
+					}
+				}
+				op.getAspect().setAspect_category(category1);
+				op.getAspect().setAttr_category_centerword(cateDict);
+				if(category1>-1){
+					op.getAspect().setAspect_category_centerword(pri_cate_dict,pri_category.get(category1));
+				}else{
+					op.getAspect().setAspect_category_centerword(pri_cate_dict,-1);
 				}
 			}
-			op.getAspect().setAspect_category(category);
-			op.getAspect().setAspect_category_centerword(cateDict);
 			resultlist.add(op);
 		}
 		return resultlist;

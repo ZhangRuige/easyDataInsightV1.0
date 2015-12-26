@@ -7,6 +7,15 @@ import org.ansj.library.UserDefineLibrary;
 
 public class DictMakeUtil {
 
+	public static void modifyDict(String dict, String split) {
+		
+		dict = dict.replaceAll("\r", "");
+		String[] str = dict.split(split);
+		for(String s :str){
+			UserDefineLibrary.insertWord(s, "userDefine", 1000);
+		}
+	}
+	
 	public static void modifyDict(String[] dict, String split) {
 		
 		for(String s :dict){

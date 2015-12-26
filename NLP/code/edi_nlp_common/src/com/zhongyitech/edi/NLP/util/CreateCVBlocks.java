@@ -1,5 +1,6 @@
 package com.zhongyitech.edi.NLP.util;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,9 +13,22 @@ import com.zhongyitech.edi.NLP.model.CRFTag;
 
 public class CreateCVBlocks {
 	
-	private static String[] dicts = {"dicts/dict0.txt","dicts/dict1.txt","dicts/dict2.txt","dicts/dict3.txt","dicts/dict4.txt","dicts/dict5.txt"};
+	private static String[] dicts = 
+		{
+		"dicts/dict0.txt",
+		"dicts/dict1.txt",
+		"dicts/dict2.txt",
+		"dicts/dict3.txt",
+		"dicts/dict4.txt",
+		"dicts/dict5.txt",
+		"dicts/dict6.txt",
+		"dicts/dict-1.txt"
+		};
 	
+	// 总块数
 	private static int cross_validate_k = 10;
+	// 每个块的大小
+	private static int block_size = 300;
 	
 	private static String[] dict =null;
 	
@@ -34,14 +48,23 @@ public class CreateCVBlocks {
 	 */
 	
 	// 分割数据形成训练集
-	public static List<String> getTrainData(String string) throws Exception{
+	public static List<String> getTrainData(String str) throws Exception{
+		String string = new String();
 		List<String> result = new ArrayList<String>();
 		try {
-			string = IoUtil.readTxt(string);
+			string = IoUtil.readTxt(str);
 		} catch (Exception e) {
 			System.out.println("请检查输入文件");
 			throw e;
 		}
+		
+		File file = new File(str);
+		long flen = file.length();
+		// 限制每一块的大概大小，300k左右
+		Integer t = (int) (flen/300/block_size)+1;
+		System.out.println(t);
+		cross_validate_k = t;
+		
 		// 切分成交叉验证的块
 		List<List<String>> list = splitData(string);
 		// 每个块包含多条评论
@@ -334,7 +357,7 @@ public class CreateCVBlocks {
 //	}
 	
 	// 输出CV分块集合
-	public static void toCVBlocksTxt(List<String> l, String string) throws Exception {
+	public static Long toCVBlocksTxt(List<String> l, String string) throws Exception {
 		for(Integer i=0;i<l.size();i++){
 			StringBuffer path = new StringBuffer();
 			path.append(string+"/block");
@@ -350,7 +373,46 @@ public class CreateCVBlocks {
 				throw e;
 			}
 		}
-		
+		String path0 = string+"/block00";
+		File f = new File(path0);
+		return f.length();
 	}
 
+	// 输出CV分块集合
+	public static Long toCVBlocksTxts(List<String> l, String string) throws Exception {
+		
+		Integer t = 0;
+		while(t<=cross_validate_k/10){
+			int j = 0;
+			String folder_path = string+"/blocks_"+t.toString();
+			File folder = new File(folder_path);
+			if(!folder.exists())
+				folder.mkdir();
+			int tmp = t*10;
+			for(Integer i=tmp;i<l.size();i++){
+				if(j<10)
+					j++;
+				else
+					break;
+				StringBuffer path = new StringBuffer();
+				path.append(folder_path+"/block");
+				Integer p = i-tmp;
+				String s = l.get(p);
+				if(i<10)
+					path.append("0");
+				path.append(p.toString());
+				try {
+					IoUtil.writeToText(s, path.toString());
+				} catch (IOException e) {
+					System.out.println("CV分块文件写入异常");
+					e.printStackTrace();
+					throw e;
+				}
+			}
+			t++;
+		}
+		String path0 = string+"/blocks_0/block00";
+		File f = new File(path0);
+		return f.length();
+	}
 }

@@ -12,6 +12,9 @@ public class Opinion {
 
 	private String raw_data;
 
+	private static int maxleft = 3;
+	private static int maxright = 1;
+	
 	public OpElement getProduct() {
 		return product;
 	}
@@ -57,7 +60,7 @@ public class Opinion {
 		if (product.getStart_index() == -1) {
 			if(aspect.getStart_index() == -1){
 				if(attribute.getStart_index() == -1){
-					return raw_data.substring(0, sentiment.getEnd_index() + 1);
+					return raw_data.substring(sentiment.getStart_index(), sentiment.getEnd_index() + 1);
 				}
 				return raw_data.substring(attribute.getStart_index(), sentiment.getEnd_index() + 1);
 			}else{
@@ -72,7 +75,7 @@ public class Opinion {
 		if (product.getStart_index() == -1) {
 			if(aspect.getStart_index() == -1){
 				if(attribute.getStart_index() == -1){
-					return 0;
+					return sentiment.getStart_index();
 				}
 				return attribute.getStart_index();
 			}else{
@@ -91,19 +94,20 @@ public class Opinion {
 		if (product.getStart_index() == -1) {
 			if(aspect.getStart_index() == -1){
 				if(attribute.getStart_index() == -1){
+//					return sentiment.getTerm_index()-maxleft;
 					return 0;
 				}
-				return attribute.getTerm_index();
+				return attribute.getTerm_index()-maxleft;
 			}else{
-				return aspect.getTerm_index();
+				return aspect.getTerm_index()-maxleft;
 			}
 		} else {
-			return product.getTerm_index();
+			return product.getTerm_index()-maxleft;
 		}
 	}
 
 	public int getTerm_end_index() {
-		return sentiment.getTerm_index();
+		return sentiment.getTerm_index()+maxright;
 	}
 
 	// 获得情感值
@@ -123,13 +127,15 @@ public class Opinion {
 	public String get_prod() {
 		return product.getContent();
 	}
-
+	//一级分类还是一级分类
 	public String get_aspe() {
 		return aspect.getAspect_category_centerword();
+//		return aspect.getContent();
 	}
-
+	//二级分类是总分类
 	public String get_attr() {
-		return attribute.getContent();
+//		return attribute.getContent();
+		return aspect.getAttr_category_centerword();
 	}
 
 	public String get_sent() {

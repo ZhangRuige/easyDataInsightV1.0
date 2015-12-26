@@ -8,15 +8,19 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.ansj.domain.Term;
+import org.ansj.library.UserDefineLibrary;
 import org.ansj.splitWord.analysis.BaseAnalysis;
 import org.ansj.splitWord.analysis.NlpAnalysis;
 import org.ansj.splitWord.analysis.ToAnalysis;
+import org.ansj.util.FilterModifWord;
 
 import com.zhongyitech.edi.NLP.util.CreateCVBlocks;
 import com.zhongyitech.edi.NLP.util.DictMakeUtil;
 import com.zhongyitech.edi.NLP.util.IoUtil;
+import com.zhongyitech.edi.NLP.util.MergeSegments;
 import com.zhongyitech.edi.NLP.util.NewWordsDiscovery;
 import com.zhongyitech.edi.NLP.util.OpMiningUtil;
+import com.zhongyitech.edi.NLP.util.W2vUtil;
 
 public class JavaTest {
 
@@ -31,7 +35,7 @@ public class JavaTest {
 //		String l2 = NewWordsDiscovery.getNewWords("F:\\share\\result",(float) 0.4);
 //		System.out.println(l2);
 //		NewWordsDiscovery.toNewWordsTxt();
-		
+//		
 //		String s = new String();
 //		try {
 //			s = IoUtil.readTxt("E:\\000000_0");
@@ -43,8 +47,94 @@ public class JavaTest {
 //		String s = "\"aaa\"";
 //		String s1 = s.replaceAll("\\\\", "");
 //		System.out.println(s1);
-		System.out.println(ToAnalysis.parse("后盖很漂亮。试用了一天，效果感觉还是可以"));
+		
+//		String path = "E:\\000000_0";
+//		String comment = IoUtil.readTxt(path);
+//		List<Term> wordsegment = ToAnalysis.parse(comment);
+//		System.out.println(wordsegment.toString());
+		
+//		StringBuffer sb = new StringBuffer();
+//		for(Term t :wordsegment){
+//			if(!t.toString().equals("/")&&t.toString().contains("/")){
+//				try{
+//				sb.append(" ");
+//				sb.append(t.toString().split("/")[0]);
+//				}
+//				catch(Exception e){
+//					System.out.println(t.toString());
+//				}
+//			}
+//		}
+//		sb.deleteCharAt(0);
+//		IoUtil.writeToText(sb.toString(), "E:\\WordSegment");
+		
+//		W2vUtil.word2vecModelTrain("");
+		
+//		String path = "corpus/good";
+//		
+//		List<Term> list1 = ToAnalysis.parse(IoUtil.readTxt(path));//分词
+//		
+//		OpMiningUtil.setStopWord("dicts/stopWordDict.txt");//停用词典
+//		
+//		List<Term> list = FilterModifWord.modifResult(list1);//去停用词
+//		
+//		StringBuffer s = new StringBuffer();
+//		for(int i=0;i<list.size();i++){
+//			s.append(list.get(i).toString()+" ");
+//		}
+//	
+//		path = "corpus/pos";
+//		String str = s.toString().replaceAll("[a-zA-Z]+", "");
+//		str = str.replaceAll("[0-9]+.", "");
+//		str = str.replaceAll("[！@#￥%……&*（）？：“；”‘\"'’，。,.^()<>/]", "");
+//		str = str.replaceAll(" +", " ");
+//		IoUtil.writeToText(str, path);
+//		
+//		String path2 = "corpus/bad";
+//		
+//		List<Term> list12 = ToAnalysis.parse(IoUtil.readTxt(path2));//分词
+//		
+//		OpMiningUtil.setStopWord("dicts/stopWordDict.txt");//停用词典
+//		
+//		List<Term> list2 = FilterModifWord.modifResult(list12);//去停用词
+//		
+//		StringBuffer s2 = new StringBuffer();
+//		for(int i=0;i<list2.size();i++){
+//			s2.append(list2.get(i).toString()+" ");
+//		}
+//	
+//		path2 = "corpus/neg";
+//		String str2 = s2.toString().replaceAll("[a-zA-Z]+", "");
+//		str2 = str2.replaceAll("[0-9]+.", "");
+//		str2 = str2.replaceAll("[！@#￥%……&*（）？：“；”‘\"'’，。,.^()<>/]", "");
+//		str2 = str2.replaceAll(" +", " ");
+//		IoUtil.writeToText(str2, path2);
+		
+//		List<Term> list1 = ToAnalysis.parse("CPU");
+//		OpMiningUtil.setStopWord("dicts/chinese_stopword.txt");//停用词典
+//		List<Term> list = FilterModifWord.modifResult(list1);//去停用词
+//		System.out.println(list.toString().substring(1, list.toString().length()-1).replaceAll("/[a-zA-Z]*,*", ""));
+		
+		
+		UserDefineLibrary.insertWord("galaxy note 5", "userDefine", 1000);
+		List<Term> list = ToAnalysis.parse("苹果6s不错啊");
+//		list = MergeSegments.mergeEnNum(list);
+		list = MergeSegments.mergeNonEnNum(list);
+		System.out.println(list);
+		
 	}
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
 	private static String[] dicts = {"dicts/dict0.txt","dicts/dict1.txt","dicts/dict2.txt","dicts/dict3.txt","dicts/dict4.txt","dicts/dict5.txt"};
 	private static String category = "dicts/categoryDicts.txt";

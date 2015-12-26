@@ -10,10 +10,10 @@ public class Test {
 
 	public static void main(String[] args) throws Exception {
 		// TODO Auto-generated method stub
-		String str = IoUtil.readTxt("E:\\ttttttttttttttttttttttttt");
+//		String str = IoUtil.readTxt("E:\\ttttttttttttttttttttttttt");
 		
 		long s = System.currentTimeMillis();
-		List<Opinion> oplist = OpMiningUtil.doSa(str, "iPhone");
+		List<Opinion> oplist = OpMiningUtil.doSa("充电慢，电池耐用，续航好，待机时间长，大小合适，拍照好，屏幕分辨率高，前置摄像头好，后置好，设计好，外形好，外观做工好，性价比高，价格低，耗电大", "iPhone");
 		long e = System.currentTimeMillis();
 		
 		for (int i = 0; i < oplist.size(); i++) {
