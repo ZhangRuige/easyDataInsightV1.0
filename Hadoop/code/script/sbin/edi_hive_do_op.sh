@@ -71,7 +71,7 @@ if [ $ecode -ne 0 ];then
 	echo "ERROR:hiveQL exec failed.exit $ecode"
 	exit $ecode
 else
-	hdfs dfs -rm -r /edi/edi_conf/last_donlp_pt=*
+	hdfs dfs -rm -r -skipTrash /edi/edi_conf/last_donlp_pt=*
 	hdfs dfs -mkdir -p /edi/edi_conf/last_donlp_pt=$cur_date
 	echo "updating... edi_conf key:last_donlp_pt=$cur_date"
 fi

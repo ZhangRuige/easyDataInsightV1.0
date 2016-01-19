@@ -21,14 +21,14 @@ select B.mbs,B.mms,B.abs,B.ams,sum(B.amt) from (
 select mm.brand_s as mbs,mm.model_s as mms,ma.brand_s as abs,ma.model_s as ams,mm.amt as amt from (
   select A.brand_s,A.model_s,A.BRAND_m,A.model_m,count(1) as amt
   FROM (
-    select i.brand as brand_s,i.model as model_s,cm.BRAND as BRAND_m,cm.model as model_m,c.PROD_ID
-    from EDI_M_COMM_MENTION cm 
-    left join EDI_M_PROD_COMMS c on cm.cid=c.id
+    SELECT i.brand as brand_s,i.model as model_s,cm.BRAND as BRAND_m,cm.model as model_m,c.PROD_ID
+    FROM EDI_R_COMM_MENTION cm 
+    LEFT JOIN EDI_M_PROD_COMMS c on cm.cid=c.id
     LEFT JOIN EDI_M_PROD_INFO i on i.PROD_ID=c.PROD_ID $condition
-  )A group by A.brand_s,A.model_s,A.BRAND_m,A.model_m 
+  )A GROUP BY A.brand_s,A.model_s,A.BRAND_m,A.model_m 
 ) mm JOIN edi_m_model_alias ma on upper(mm.model_m)=upper(ma.ALIAS) and ma.IS_BRAND=0 
-) B where B.mms!=B.ams
-group by B.mbs,B.mms,B.abs,B.ams;"
+) B WHERE B.mms!=B.ams
+GROUP BY B.mbs,B.mms,B.abs,B.ams;"
 if [ $? -ne 0 ];then
 	echo "ERROR:hiveQL exec failed.exit $ecode"
 	exit $ecode

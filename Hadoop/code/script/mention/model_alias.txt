@@ -1,0 +1,29 @@
+三星（SAMSUNG）	Galaxy Note 5（N9200）	Note 5	0
+三星（SAMSUNG）		三星	1
+三星（SAMSUNG）	Galaxy Note 5（N9200）	N9200	0
+三星	Galaxy On7	On7	0
+三星（SAMSUNG）	Galaxy S5 G9008	S5	0
+苹果（Apple）	iPhone 5s	5s	0
+苹果（Apple）	iPhone 4s	4S	0
+苹果（Apple）	iPhone 4	爱疯4	0
+苹果（Apple）	iPhone 6s	爱疯6s	0
+苹果（Apple）	iPhone 6s	6s	0
+苹果（Apple）	iPhone 6s	ip6s	0
+苹果（Apple）	iPhone 6s	iphone6s	0
+苹果（Apple）	iPhone 6s	苹果6s	0
+三星	Galaxy On7（G6000）	昂小七	0
+华为（HUAWEI）	Ascend Mate7		0
+三星	Galaxy On7	Galaxy On7	0
+三星（SAMSUNG）	Galaxy Note 5（N9200）	Galaxy Note 5（N9200）	0
+vivo	X6D	vivo	0
+三星（SAMSUNG）	G3502I	G3502I	0
+三星（SAMSUNG）	Galaxy S5 G9008	Galaxy S5 G9008	0
+三星（SAMSUNG）	N7508v	N7508v	0
+华为（HUAWEI）	P7	P7	0
+康佳（KONKA）	P3	P3	0
+联想（Lenovo）	A360E	A360E	0
+联想（Lenovo）	A388T	A388T	0
+苹果（Apple）	iPhone 5s	iPhone 5s	0
+诺亚信（NOAIN）	5310	5310	127
+诺亚信（NOAIN）	5320I	5320I	127
+贝尔丰（BIFER)	BF619	BF619	0

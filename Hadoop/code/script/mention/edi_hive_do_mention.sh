@@ -46,12 +46,8 @@ if [ ! -s $tmp_file ];then  #string length is zero
 fi
 
 echo "run import ..."
-hive -e "LOAD DATA LOCAL INPATH '$tmp_file' INTO TABLE EDI.EDI_M_COMM_MENTION PARTITION (PT_DATE='$cur_date');"
-#hive -S -e "use edi;LOAD DATA LOCAL INPATH '$tmp_file' INTO TABLE EDI_R_COMM_TAG PARTITION (PT_DATE='$cur_date');"
+hive -e "LOAD DATA LOCAL INPATH '$tmp_file' INTO TABLE EDI.EDI_R_COMM_MENTION PARTITION (PT_DATE='$cur_date');"
 ecode=$?
-rm tmp/edi_r_comm_mention_"$cur_date".td
-
-#>>>update last ptA
 if [ $ecode -ne 0 ];then
 	echo "ERROR:hiveQL exec failed.exit $ecode"
 	exit $ecode
@@ -59,7 +55,11 @@ else
 	hdfs dfs -rm -r /edi/edi_conf/last_do_mention_pt=*
 	hdfs dfs -mkdir -p /edi/edi_conf/last_do_mention_pt=$cur_date
 	echo "updating... edi_conf key:last_do_mention_pt=$cur_date"
+	
+	rm $tmp_file
 fi
+
+
 
 echo "END.$0"
 echo "spend time(s) :$(( $(date +%s) - $start_time ))"
