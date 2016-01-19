@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="hadoop_common" default="compile" basedir=".">
+    <!-- =================================================================== -->
+    <!-- 变量设置  -->
+    <!-- =================================================================== -->
+
+    <!-- 源代码src路径 -->
+    <property name="src.path" value="src"/>
+    <!-- 单元测试代码路径 -->
+    <property name="test.path" value="src/test"/>
+    <!-- 编译文件class路径 -->
+    <property name="build.path" value="build"/>
+    <!-- jar包路径 -->
+    <property name="dist.path" value="dist"/>
+    <!-- lib包路径 -->
+    <property name="lib.path" value="lib"/>
+    <!-- 生成报告junit4.xml路径 -->
+    <property name="report.path" value="report"/>
+        
+    <!-- =================================================================== -->
+    <!-- 设置classpath -->
+    <!-- =================================================================== -->
+    <path id="compile.path">        
+        <fileset dir="${lib.path}">
+            <include name="**/*.jar"/>
+        </fileset>
+    	<fileset dir="../../../edi_nlp_common/dist">
+            <include name="**/*.jar"/>
+        </fileset>
+    	<fileset dir="/opt/running/apache-hive-1.2.1-bin/lib">
+            <include name="**/*.jar"/>
+        </fileset>
+    	
+        <pathelement path="${build.path}"/>
+    </path>     
+
+    <!-- 初始化 -->
+    <target name="init">        
+        <mkdir dir="${build.path}"/>
+        <mkdir dir="${report.path}"/>
+        <mkdir dir="${dist.path}"/>
+    </target>
+    
+    <!-- =================================================================== -->
+    <!-- 清除历史编译class -->
+    <!-- =================================================================== -->
+    <target name="clean" description="clean">        
+        <delete dir="${build.path}"/>
+        <delete dir="${report.path}"/>
+        <delete dir="${dist.path}"/>
+    </target>
+
+    <!-- =================================================================== -->
+    <!-- 编译测试文件，初始化目录 -->
+    <!-- =================================================================== -->
+    <target name="compile" depends="init">
+        <javac srcdir="${src.path}" destdir="${build.path}"  classpathref="compile.path" includeantruntime="true"/>
+        <javac srcdir="${test.path}" destdir="${build.path}"  classpathref="compile.path" includeantruntime="true"/>
+    </target>
+         
+    <!-- =================================================================== -->
+    <!-- 执行测试案例 -->
+    <!-- =================================================================== -->
+    <target name="junit" depends="compile">                
+        <junit printsummary="true" fork="true">        
+             <formatter type="xml" usefile="true"/>        
+            
+             <classpath refid="compile.path"/>        
+            
+            <batchtest fork="on" todir="${report.path}" haltonfailure="no">
+                <fileset dir="${build.path}">
+                    <include name="**/*Test.class"/>
+                </fileset>
+            </batchtest>                 
+         </junit>        
+     </target>
+    
+    <target name="junit-report" depends="junit">        
+        <!-- 产生单元测试报表文档 -->
+        <junitreport todir="${report.path}">
+            <fileset dir="${report.path}">
+                <include name="TEST-*.xml" />
+            </fileset>
+            
+            <report format="frames" todir="${report.path}" />
+        </junitreport>
+    </target>
+
+    <target name="make-jar" depends="compile" description="make jar file">
+          <jar jarfile="com.zhongyitech.edi.hadoop-1.1.jar">
+               <fileset dir="${build.path}">
+
+                <!--除去test文件-->
+                <exclude name="**/*Test.class"/>
+               </fileset>
+          </jar>
+     </target>    
+    
+</project>
+
+build.xml
