@@ -15,7 +15,17 @@ import com.ansj.vec.Word2VEC;
 
 public class NewWordsDiscovery {
 	
-	private static String[] dicts = {"dicts/dict0.txt","dicts/dict1.txt","dicts/dict2.txt","dicts/dict3.txt","dicts/dict4.txt","dicts/dict5.txt"};
+	private static String[] dicts = 
+		{
+		"dicts/dict0.txt",
+		"dicts/dict1.txt",
+		"dicts/dict2.txt",
+		"dicts/dict3.txt",
+		"dicts/dict4.txt",
+		"dicts/dict5.txt",
+		"dicts/dict6.txt",
+		"dicts/dict-1.txt"
+		};
 	private static String category = "dicts/categoryDicts.txt";
 	private static String cate1 = "dicts/cate1.txt";
 	
@@ -25,8 +35,10 @@ public class NewWordsDiscovery {
 	
 	private static String crf_result = "";
 	
-	// 相似度默认阈值
+	// 相似度默认阈值——名词
 	private static float sim = (float) 0.5;
+	// 相似度默认阈值——其他词性
+	private static float sim_others = (float) 0.75;
 	
 	private static Word2VEC w2v = new Word2VEC();
 	private static int w2vflag = 0;
@@ -62,7 +74,7 @@ public class NewWordsDiscovery {
 				System.out.println("找不到crf标注结果");
 				return "";
 			}
-			
+			// 对每个crf标注结果文件
 			for(String path : fn){
 				List<String> cnws = findCandidateWords(path,"d");
 				List<String> nws = filterWords(cnws);
@@ -119,7 +131,10 @@ public class NewWordsDiscovery {
 						}
 						if(sw[2]!="B")
 							flag=1;
-						sb.append(sw[0]);
+						if(sw[1].contains("E")||sw[1].contains("S"))
+							sb.append(sw[0]+"/"+sw[1].substring(1));
+						else
+							sb.append(sw[0]);
 						if(i==w.length && flag == 1){
 							result.add(sb.toString());
 						}
@@ -127,7 +142,10 @@ public class NewWordsDiscovery {
 					case "I":
 						if(sw[2]!="I")
 							flag=1;
-						sb.append(sw[0]);
+						if(sw[1].contains("E")||sw[1].contains("S"))
+							sb.append(sw[0]+"/"+sw[1].substring(1));
+						else
+							sb.append(sw[0]);
 						if(i==w.length){
 							result.add(sb.toString());
 						}
@@ -195,16 +213,25 @@ public class NewWordsDiscovery {
 
 	private static boolean isNewWord(String s) throws Exception {
 
-		List<String> cateDict = DictMakeUtil.makeCateDict(category);
-//		List<String> cateDict = DictMakeUtil.makeCateDict(cate1);
+//		List<String> cateDict = DictMakeUtil.makeCateDict(category);
+		List<String> cateDict = DictMakeUtil.makeCateDict(cate1);
+		String s0 = new String();
+		String s1 = new String();
+		if(s.indexOf("/")!=-1){
+			s0 = s.substring(0,s.indexOf("/"));
+			s1 = s.substring(s.indexOf("/")+1);
+		}else{
+//			System.out.println(s);
+		}
+
 		
-	    float max = 0;
+		float max = 0;
 	    float temp = 0;
 		for(String c : cateDict){
 			if(c==null || c=="" || c.equals(""))
 				continue;
 			try{
-				temp = W2vUtil.dist(w2v.getWordVector(c), w2v.getWordVector(s));
+				temp = W2vUtil.dist(w2v.getWordVector(c), w2v.getWordVector(s0));
 //				temp = w2v.similarity(c, s);
 			}catch(Exception e){
 //				if(e.toString().contains("NullPointerException"))
@@ -213,7 +240,12 @@ public class NewWordsDiscovery {
 			}
 			max = temp>max?temp:max;
 		}
-		return max>sim;
+		if(s1.equals("n")||s1.equals("UserDefine")){
+			return max>sim;
+		}
+		else{
+			return max>sim_others;
+		}
 	}
 
 	private static String toNewWordsString(List<String> nws) {
@@ -346,14 +378,16 @@ public class NewWordsDiscovery {
 			for (String s : ws) {
 				if (s.length()==0)
 					continue;
+				if (s.indexOf("/")==-1)
+					continue;
 //				if (!d3.contains("/" + s + "/") && !d4.contains("/" + s + "/")) {
-				if (!d2.contains("/" + s + "/")) {
+				if (!d2.contains("/" + s.substring(0,s.indexOf("/")) + "/")) {
 //				if (!d1.contains("/" + s + "/")) {
-					if (nwMap.get(s) == null)
+					if (nwMap.get(s.substring(0,s.indexOf("/"))) == null)
 						n = 0;
 					else
-						n = nwMap.get(s);
-					nwMap.put(s, n++);
+						n = nwMap.get(s.substring(0,s.indexOf("/")));
+					nwMap.put(s.substring(0,s.indexOf("/")), n++);
 				}
 			}
 			for (Entry<String, Integer> e : nwMap.entrySet()) {

@@ -16,12 +16,15 @@ public class ToCVBlocks {
 			System.out.println("请输入两个参数：1.评论文件的路径，2.生成分块的路径");
 			return;
 		}
-		
+//		long s = System.currentTimeMillis();
 		List<String> l = CreateCVBlocks.getTrainData(args[0]);
 		Long length = CreateCVBlocks.toCVBlocksTxts(l,args[1]);
 		int kbs = (int) (length/1024);
+//		long e = System.currentTimeMillis();
 		// 打印CRF模型的参数f
-		System.out.println("f_value="+kbs*10);
+		System.out.println("f_value="+kbs);
+		
+//		System.out.println(e-s);
 	}
 
 }

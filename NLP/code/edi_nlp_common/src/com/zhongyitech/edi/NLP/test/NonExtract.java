@@ -16,19 +16,26 @@ import com.zhongyitech.edi.NLP.util.MergeSegments;
 public class NonExtract {
 
 	public static void main(String[] args) {
-		String path = "E:\\testdata\\part-r-00000_2.5w_comms";
+//		String path = "E:\\testdata\\part-r-00000_2.5w_comms";
+		String path = "E:\\testdata\\comms_14w_20151209";
 		String str = null;
 		try {
 			str = IoUtil.readTxt(path);
+			System.out.println("字数："+str.length());
 		} catch (Exception e2) {
 			// TODO Auto-generated catch block
 			e2.printStackTrace();
 		}
-		List<Term> list = ToAnalysis.parse(str);
-		list = MergeSegments.mergeNonEnNum(list);
-		String tmp = new String();
+		System.out.println("now do segment...");
+		List<Term> list = ToAnalysis.parse(str.replaceAll(" +", " "));
+		System.out.println("词数："+list.size());
+//		list = MergeSegments.mergeNonEnNum(list);
+//		list = MergeSegments.mergeEnNum(list);
+//		System.out.println("合并后词数："+list.size());
 		Map<String,Integer> map = new HashMap<>();
-		int flag = 0;
+		map.clear();
+//		String tmp = new String();
+//		int flag = 0;
 		Integer v;
 		for(Term t :list){
 			if(t.toString().length()>1 && t.toString().indexOf("/")!=-1){
@@ -48,21 +55,21 @@ public class NonExtract {
 //					continue;
 //				}
 				
-//				if(tempsplit[1].equals("n")){
-//					if( (v = map.get(tempsplit[0])) !=null){
-//						map.put(tempsplit[0], v+1);
-//					}else{
-//						map.put(tempsplit[0], 1);
-//					}
-//				}
-				
-				if(tempsplit[1].equals("UserDefineMerge")){
+				if(tempsplit[1].equals("n")){
 					if( (v = map.get(tempsplit[0])) !=null){
 						map.put(tempsplit[0], v+1);
 					}else{
 						map.put(tempsplit[0], 1);
 					}
 				}
+				
+//				if(tempsplit[1].equals("UserDefineMerge")){
+//					if( (v = map.get(tempsplit[0])) !=null){
+//						map.put(tempsplit[0], v+1);
+//					}else{
+//						map.put(tempsplit[0], 1);
+//					}
+//				}
 			}
 		}
 		

@@ -26,9 +26,9 @@ public class CreateCVBlocks {
 		};
 	
 	// 总块数
-	private static int cross_validate_k = 10;
+	private static int cross_validate_k = -1;
 	// 每个块的大小
-	private static int block_size = 300;
+	private static int block_size = 3000;
 	
 	private static String[] dict =null;
 	
@@ -60,7 +60,7 @@ public class CreateCVBlocks {
 		
 		File file = new File(str);
 		long flen = file.length();
-		// 限制每一块的大概大小，300k左右
+		// 限制每一块的大概大小，block_size kb左右
 		Integer t = (int) (flen/300/block_size)+1;
 		System.out.println(t);
 		cross_validate_k = t;
@@ -98,6 +98,24 @@ public class CreateCVBlocks {
 		result = sb.toString();
 		return result;
 	}
+	
+	private static String toCrossValBlock2(List<List<CRFTag>> taglist) {
+		String result = new String();
+		StringBuffer sb = new StringBuffer();
+		for(int i=0;i<taglist.size();i++){
+			int size = taglist.get(i).size();
+			for(int j=0;j<size;j++){
+				sb.append(taglist.get(i).get(j).getWord());
+				sb.append("\t");
+				sb.append("O");
+				sb.append("\t");
+				sb.append(taglist.get(i).get(j).getSpec_tag());
+				sb.append("\r\n");
+			}
+		}
+		result = sb.toString();
+		return result;
+	}
 
 	private static void loadDicts() throws Exception{
 		dict = DictMakeUtil.makeOpDict(dicts);//观点元素词典
@@ -125,6 +143,21 @@ public class CreateCVBlocks {
 		// 分割出每个index
 		String[] index = indexs.split(";");
 		return(tagMap(comment,list,index));
+	}
+	
+	private static List<CRFTag> tagComm2(String str) throws Exception{
+		String[] sl = str.split("\t");
+		if(sl.length==1){
+			return(tagMap2(sl[0],null));
+		}else if(sl.length==2){
+			String comment = sl[0];
+			String indexs = sl[1];
+			
+			String[] index = indexs.split(";");
+			return(tagMap2(comment,index));
+		}else{
+			return null;
+		}
 	}
 
 	private static List<List<String>> splitData(String string) {
@@ -194,8 +227,8 @@ public class CreateCVBlocks {
 	    }
 	    return array;
 	}
-
-	public static List<CRFTag> tagMap(String comm,List<Term> list,String[] index){
+	// 字，词性，标注。格式的训练集
+	private static List<CRFTag> tagMap(String comm,List<Term> list,String[] index){
 
 		
 		List<Integer> s = new ArrayList<Integer>();
@@ -257,6 +290,48 @@ public class CreateCVBlocks {
 //				System.out.println(reslist.size());
 //				System.out.println(reslist.get(j).getWord());
 				reslist.get(j).setSpec_tag("I");
+			}
+		}
+		return reslist;
+	}
+	
+	// 字，标注
+	private static List<CRFTag> tagMap2(String comm,String[] index){
+
+		
+		List<Integer> s = new ArrayList<Integer>();
+		List<Integer> e = new ArrayList<Integer>();
+		
+		// 字
+		List<CRFTag> reslist = new ArrayList<CRFTag>();
+		for(int i=0;i<comm.length();i++){
+			CRFTag tag = new CRFTag();
+			tag.setWord(comm.substring(i, i+1));
+			tag.setSpec_tag("O");
+			
+			reslist.add(tag);
+		}
+		
+		// 标注
+		if(index!=null){
+			// 处理开始结束的index
+			for(int i=0;i<index.length;i++){
+				s.add(Integer.parseInt(index[i].split(",")[0]));
+				e.add(Integer.parseInt(index[i].split(",")[1]));
+			}
+			for(int i=0;i<s.size();i++){
+				int st = s.get(i);
+				int et = e.get(i);
+				if(st>=reslist.size()||et>=reslist.size()||st>et){
+					System.out.println("第"+i+"个词的index有问题.");
+					continue;
+				}
+				if(st==-1)
+					continue;
+				reslist.get(st).setSpec_tag("B");
+				for(int j=st+1;j<=et;j++){
+					reslist.get(j).setSpec_tag("I");
+				}
 			}
 		}
 		return reslist;
@@ -378,8 +453,8 @@ public class CreateCVBlocks {
 		return f.length();
 	}
 
-	// 输出CV分块集合
-	public static Long toCVBlocksTxts(List<String> l, String string) throws Exception {
+	// 输出CV分块集合s_Old
+	public static Long toCVBlocksTxts_Old(List<String> l, String string) throws Exception {
 		
 		Integer t = 0;
 		while(t<=cross_validate_k/10){
@@ -415,4 +490,125 @@ public class CreateCVBlocks {
 		File f = new File(path0);
 		return f.length();
 	}
+	
+	// 输出CV分块集合s
+	public static Long toCVBlocksTxts(List<String> l, String string) throws Exception {
+		
+		Integer t = 0;
+		while(t<cross_validate_k){
+			StringBuffer path = new StringBuffer();
+			path.append(string);
+			path.append("/block");
+			path.append("_");
+			path.append(t.toString());
+			String s = l.get(t);
+			try {
+				IoUtil.writeToText(s, path.toString());
+			} catch (IOException e) {
+				System.out.println("CV分块文件写入异常");
+				e.printStackTrace();
+				throw e;
+			}
+			t++;
+		}
+		String path0 = string+"/block_0";
+		File f = new File(path0);
+		return f.length();
+	}
+	
+	// 标题训练集生成
+	/*
+	 * 输入：1.带index的标题文本，2.输出文件保存路径
+	 * 
+	 * 输出：标注后的CRF格式的文本
+	 * 
+	 */
+	public static String getTrainData_Title(String str,String path) throws Exception{
+		
+		String[] ss = str.split("\r\n");
+		StringBuffer sb = new StringBuffer();
+		String result = new String();
+		for(String s :ss){
+			sb.append(tagTitle(s));
+		}
+		result = sb.toString();
+		IoUtil.writeToText(result, path);
+		
+		return result;
+	}
+	private static String tagTitle(String str) throws Exception{
+		
+		List<CRFTag> tag = tagComm2(str);
+		List<List<CRFTag>> taglist = new ArrayList<>();
+		taglist.add(tag);
+		
+		return toCrossValBlock2(taglist);
+	}
+	//转换成文本+index的类型
+	public static String markTitle(String titleInfo_path, String brand_path) {
+		
+		String result = new String();
+		StringBuffer sb = new StringBuffer();
+		String title = new String();
+		String brand = new String();
+		try {
+			title = IoUtil.readTxt(titleInfo_path);
+			title = title.replace(" ", "");
+			title = title.replace("\n", "。\n");
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			brand = IoUtil.readTxt(brand_path);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		String[] brand_list0 = brand.split("\n");
+		String[][] brand_list = new String[brand_list0.length][2];
+		int i = 0;
+		for(String s : brand_list0){
+			brand_list[i][0] = s.split("\t")[0];
+			brand_list[i][1] = s.split("\t")[1];
+			i++;
+		}
+		String[] title_list = title.split("\n");
+		for(String s : title_list){
+			int flag = 0;
+			for(String[] ss : brand_list){
+				String ti = titleIndex(s,ss[0],ss[1]);
+				if(ti!=null && !ti.equals(s)){
+					sb.append(ti);
+					if(flag==0)
+						flag=1;
+				}
+			}
+			if(flag==0)
+				sb.append(s);
+		}
+		result = sb.toString();
+		return result;
+	}
+
+	private static String titleIndex(String title, String brand, String model) {
+		// TODO Auto-generated method stub
+		String result = new String();
+		StringBuffer sb = new StringBuffer();
+		int index = 0;
+		if(model!=null && model.length()>0 && (index = title.indexOf(model))!=-1){
+			sb.append(title);
+			sb.append("\t");
+			sb.append(index);
+			sb.append(",");
+			sb.append(index+model.length()-1);
+			sb.append("\r\n");
+			
+			result = sb.toString();
+		}else{
+			result = title;
+		}
+		return result;
+	}
+	
 }

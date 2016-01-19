@@ -25,17 +25,20 @@ public class ResultCountTest {
 //		System.out.println(list);
 //		System.out.println(e-s);
 		
-		String path = "E:\\comments.txt";
-		String product = "pro1";
+//		String st = IoUtil.readTxt("corpus/comms_14w_20151209");
+//		String[] c = st.split("\n");
 		
+		String path = "E:\\comments.txt";
+		String product = "iphone";
 		String[] c = extractComments(path).split("\n");
-		int n = 10;
+//		int n = 10;
 //		String str = randomComments(c,n);
 //		String[] strs = str.split("\n");
 		
 		List<Integer> sentNo = new ArrayList<Integer>();
 		int t = 0;
 		List<Opinion> list = new ArrayList<Opinion>();
+		long s = System.currentTimeMillis();
 		for(String str :c){
 			List<Opinion> templ = OpMiningUtil.doSa(str, product);
 			list.addAll(templ);
@@ -44,6 +47,7 @@ public class ResultCountTest {
 			while(tsz-->0)
 				sentNo.add(t);
 		}
+		long e = System.currentTimeMillis();
 		OpRes o = new OpRes();
 		List<OpRes> opres = new ArrayList<OpRes>();
 		for (int i = 0; i < list.size(); i++) {
@@ -66,6 +70,7 @@ public class ResultCountTest {
 		List<OpRes> sample = getSample(sample_path);
 		ResultCount res = compare(opres,sample);
 		System.out.println("recall:"+res.getRecall()+"\nprecision:"+res.getPrecision());
+		System.out.println(e-s);
 	}
 
 	private static ResultCount compare(List<OpRes> opres, List<OpRes> sample) {

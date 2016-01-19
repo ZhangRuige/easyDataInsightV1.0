@@ -116,11 +116,22 @@ public class JavaTest {
 //		System.out.println(list.toString().substring(1, list.toString().length()-1).replaceAll("/[a-zA-Z]*,*", ""));
 		
 		
-		UserDefineLibrary.insertWord("galaxy note 5", "userDefine", 1000);
-		List<Term> list = ToAnalysis.parse("苹果6s不错啊");
-//		list = MergeSegments.mergeEnNum(list);
-		list = MergeSegments.mergeNonEnNum(list);
-		System.out.println(list);
+//		UserDefineLibrary.insertWord("galaxy note 5", "userDefine", 1000);
+////		UserDefineLibrary.insertWord("超", "userDefine", 1000);
+////		UserDefineLibrary.insertWord("高", "userDefine", 1000);
+//		List<Term> list = ToAnalysis.parse("常死机");
+////		list = MergeSegments.mergeEnNum(list);
+//		list = MergeSegments.mergeNonEnNum(list);
+//		System.out.println(list);
+		
+//		String s = "字/词性";
+//		String s0 = s.substring(0,s.indexOf("/"));
+//		String s1 = s.substring(s.indexOf("/")+1);
+//		System.out.println(s0);
+//		System.out.println(s1);
+		
+		List<Term> list1 = ToAnalysis.parse("s41s");
+		System.out.println(list1);
 		
 	}
 

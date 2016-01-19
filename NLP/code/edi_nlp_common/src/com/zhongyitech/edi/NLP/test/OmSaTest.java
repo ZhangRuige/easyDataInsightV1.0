@@ -10,10 +10,11 @@ public class OmSaTest {
 
 	public static void main(String[] args) throws Exception {
 		// TODO Auto-generated method stub
-		String str = IoUtil.readTxt("corpus/rawdata.txt");
+		String str = IoUtil.readTxt("corpus/part-r-00000_2.5w_comms");
 		
 		long s = System.currentTimeMillis();
-		List<Opinion> oplist = OpMiningUtil.doSa("费电\"速度很快 金属感强烈 很薄很轻\"", "iPhone");
+//		List<Opinion> oplist = OpMiningUtil.doSa(str, "iPhone");
+		List<Opinion> oplist = OpMiningUtil.doSa("常死机常死机常死机常死机常死机常死机常死机常死机常死机常死机常死机常死机常死机常死机常死机常死机常死机常死机常死机常死机常死机常死机常死机常死机常死机常死机常死机常死机常死机", "iPhone");
 		long e = System.currentTimeMillis();
 		
 		for (int i = 0; i < oplist.size(); i++) {
@@ -25,6 +26,8 @@ public class OmSaTest {
 					+ "\r\n\t评论对象种类：" + oplist.get(i).get_attr()
 					+ "\r\n\t情感词：" + oplist.get(i).getSentiment().getContent()
 					+ "\r\n\t否定词：" + oplist.get(i).getNeg_words()
+					+ "\r\n\t情感输出：" + oplist.get(i).get_opsa()
+					+ "\r\n\t情感值：" + oplist.get(i).getSentiment().getSentiment_value()
 					+ "\r\n\t情感分类：" + oplist.get(i).getSentiment().getSentiment_category()
 					+ "\r\n\t观点句位置：[" + oplist.get(i).getOp_start_index() + "," + oplist.get(i).getOp_end_index() + "]"
 					+ "\r\n\t观点句：" + oplist.get(i).getOp_sent()
