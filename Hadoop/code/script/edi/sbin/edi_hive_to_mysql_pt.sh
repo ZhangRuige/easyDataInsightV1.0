@@ -18,8 +18,7 @@ fi
 
 #hive2mysql
 echo "INFO:table loop start."
-#for table in {'m_prod_info','m_prod_comms','m_r_amount','m_model_mention'}
-for table in {'M_PROD_INFO','M_PROD_COMMS','M_R_AMOUNT','M_MODEL_MENTION'}
+for table in {'M_PROD_COMMS','M_MODEL_MENTION'}
 do
 	#>>>1.get the last sync partition
 	export_pt=`hdfs dfs -ls /edi/edi_conf/ | grep $table".last_push_mysql" | tail -n 1 | cut -f2 -d "="`
@@ -45,7 +44,8 @@ do
 		sh ../sbin/sqoop_to_mysql.sh "$table" -partition "$folder"
 		if [ $? -ne 0 ];then
 			echo "ERROR:sqoop error.skip $table ,code=$?"
-			continue
+			#continue
+			break
 		else
 			#>>>update last sync
 			hdfs dfs -rm -r -skipTrash /edi/edi_conf/$table".last_push_mysql=*"

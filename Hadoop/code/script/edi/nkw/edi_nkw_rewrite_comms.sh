@@ -10,7 +10,7 @@ cur_date=`date +%Y%m%d%H%M%S`
 source /etc/profile
 
 if [ $# -ne 1 ] ; then
-	echo "USAGE: $0 export_dir,use default export_dir 'data/blocks'"
+	echo "USAGE: $0 export_dir(default export_dir 'data/blocks')"
 	#exit 0;
 	export_dir=/opt/running/edi/nkw/data/blocks
 else
@@ -25,8 +25,8 @@ fi
 rm -rf $export_dir/*
 
 #>>>1.get the last partition
-last_donlp_pt=`hdfs dfs -ls /edi/edi_conf |grep 'last_train_rewrite_pt' |tail -n 1|cut -f2 -d '='`
-echo "last_train_rewrite_pt=$last_train_rewrite_pt"
+last_train_rewrite_pt=`hdfs dfs -ls /edi/edi_conf | grep last_train_rewrite_pt | tail -n 1 | cut -f2 -d '='`
+echo "last_train_rewrite_pt($?)=$last_train_rewrite_pt"
 condition=""
 if [ "$last_train_rewrite_pt" != "" ];then
         condition=" WHERE PT_DATE > '$last_train_rewrite_pt'"
@@ -60,8 +60,8 @@ if [ $? -ne 0 ];then
 else
 	fc=`ls $export_dir | wc -l`
 	echo "INFO:output file count:$fc"
-	if [ $fc -lt 4 ];then
-		echo "ERROR:output block files count is $fc ,less than 4,give up and delay to next time process.exit with -1"
+	if [ $fc -lt 5 ];then
+		echo "ERROR:output block files count is $fc ,less than 5,give up and delay to next time process.exit with -1"
 		echo "time cost(s) :$(( $(date +%s) - $start_time ))"
 		exit -1
 	else

@@ -19,27 +19,37 @@ param_a=edi
 param_b=edi@zy11
 table=`echo "$1" |tr A-Z a-z`
 t_table=$table
-args1=$2
-args2=$3
+action=$2
+partition=$3
 
-if [ "$args1" = "-overwrite" ];then
+if [ "$action" = "-overwrite" ];then
 	echo "$0 INFO:truncate mysql table $table."
 	mysql -h HadoopMySQL -u $param_a -p$param_b -e "use edi;delete from $table ;"
-	file=/user/hive/warehouse/edi.db/edi_$table
-elif [ "$args1" = "-add" ];then	
-	file=/user/hive/warehouse/edi.db/edi_$table
-elif [ "$args1" = "-partition" ];then
-	if [ "$args2" = "" ];then
+	if [ "$partition" = "" ];then
+		file=/user/hive/warehouse/edi.db/edi_$table
+	else
+		file=/user/hive/warehouse/edi.db/edi_"$table"/pt_date=$partition
+		t_table=t_$table
+	fi
+elif [ "$action" = "-add" ];then	
+	if [ "$partition" = "" ];then
+		file=/user/hive/warehouse/edi.db/edi_$table
+	else
+		file=/user/hive/warehouse/edi.db/edi_"$table"/pt_date=$partition
+	fi
+elif [ "$action" = "-partition" ];then
+	if [ "$partition" = "" ];then
 		echo "$0 INFO:please input partition name."
 		exit 0
 	fi
-	file=/user/hive/warehouse/edi.db/edi_"$table"/pt_date=$3
+	file=/user/hive/warehouse/edi.db/edi_"$table"/pt_date=$partition
 	t_table=t_$table
 fi
 
 echo "$0 INFO:export file:$file"
 sqoop export --connect "jdbc:mysql://HadoopMySQL/edi?useUnicode=true&characterEncoding=utf-8" \
 	     --table "$t_table" --username $param_a --password $param_b --export-dir $file --input-fields-terminated-by '\t' \
+	     --mapreduce-job-name "export hive table $t_table to mysql" -m 1 \
 	     --input-null-string NULL --input-null-non-string NULL 
 ecode=$?
 if [ $ecode -ne 0 ];then
@@ -47,8 +57,8 @@ if [ $ecode -ne 0 ];then
 fi
 
 
-if [ "$args1" = "-partition" ];then
-	mysql -h HadoopMySQL -u $param_a -p$param_b -e "USE edi;INSERT INTO $table SELECT T.*,'$args2' AS CREATED_DT FROM $t_table T;TRUNCATE TABLE $t_table;"
+if [ "$table" != "$t_table" ];then
+	mysql -h HadoopMySQL -u $param_a -p$param_b -e "USE edi;INSERT INTO $table SELECT T.*,'$partition' AS CREATED_DT FROM $t_table T;TRUNCATE TABLE $t_table;"
 fi
 
 echo "$0 DONE. spend time(s) :"$(( $(date +%s) - $start_time ))

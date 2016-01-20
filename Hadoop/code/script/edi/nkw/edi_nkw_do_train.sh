@@ -11,7 +11,7 @@ echo $cur_date
 
 echo "running ..."
 echo "INFO:run edi_nkw_rewrite_comms.sh"
-#./edi_nkw_rewrite_comms.sh
+./edi_nkw_rewrite_comms.sh
 ecode=$?
 if [ $ecode -ne 0 ];then
 	echo "ERROR:exec edi_nkw_rewrite_comms.sh failed.exit $ecode"
@@ -24,8 +24,7 @@ train_block_b=block_0
 
 #0.crf_learn训练得到模型train_model_a
 echo "INFO:executting :crf_learn -f 3000 -c 2 template_file $train_block_a model_file"
-rm -rf tmp/*
-mkdir tmp/result
+rm -rf tmp/result/* tmp/bfilenames tmp/train_model_*
 /usr/local/bin/crf_learn -c 2 -f 3000 data/crf_template data/blocks/$train_block_a tmp/train_model_a > /dev/null
 
 #3.crf_learn训练得到模型train_model_b,用train_model_b对train_block_a做测试
@@ -41,14 +40,14 @@ ls -1 data/blocks/[^_]* | cut -d '/' -f3 > tmp/bfilenames && hdfs dfs -put tmp/b
 ecode=$?
 if [ $ecode -ne 0 ];then
 	echo "ERROR:init failed.skip code=$ecode"
-	break
+	exit $ecode
 fi
 	
 bcount=`cat tmp/bfilenames |wc -l`
 echo "mappers count=$bcount"
 if [ $bcount -eq 0 ];then
 	echo "$line/blocks count = 0 skip ."
-	continue
+	exit $ecode
 fi
 let "bcount-=1"  #except train block
 
@@ -86,7 +85,7 @@ java -classpath lib/word2vec.jar:lib/ansj_seg-2.0.8.jar:lib/nlp-lang-1.0.jar:lib
 ecode=$?
 if [ $ecode -ne 0 ];then
 	echo "ERROR:filter and merge failed.skip code=$ecode"
-	continue
+	exit $ecode
 fi
 
 #5.merge to dicts
@@ -96,7 +95,7 @@ mv dicts/newwords.txt "dicts/newwords.txt_$cur_date"
 ecode=$?
 if [ $ecode -ne 0 ];then
 	echo "ERROR:merge to dicts failed,skip code=$ecode"
-	continue
+	exit $ecode
 fi
 
 echo "time cost(s) :$(( $(date +%s) - $start_time ))"

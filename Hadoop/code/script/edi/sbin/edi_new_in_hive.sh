@@ -26,14 +26,14 @@ else
 	fi
 
 	echo "3.INFO:local file to hive."
-	hive -S -e "LOAD DATA LOCAL INPATH '$newdir/comment/part-r-00000' INTO TABLE EDI.EDI_N_PROD_COMMS PARTITION (PT_DATE='$cur_date');"
+	#sed -i 's/^\t//' $newdir/comment/part-r-00000
+	hive -S -e "LOAD DATA LOCAL INPATH '$newdir/comment/part-r-00000' INTO TABLE EDI.EDI_N_PROD_COMMS partitions(pt_date='$cur_date');"
 	ecode=$?
 	if [ $ecode -ne 0 ];then
 		echo "ERROR:import new file to hive failed.exit $ecode"
 	else	
-		echo "4.INFO:hive new data from table EDI_N_PROD_COMMS to EDI_M_PROD_COMMS."
-		echo "INFO:EDI_N_PROD_COMMS 2 EDI_M_PROD_COMMS.pt >= $cur_date running..."
-		hive -S -e "INSERT INTO TABLE EDI.EDI_M_PROD_COMMS PARTITION(pt_date='$cur_date') SELECT '$cur_date',id,'NULL',referenceId,content,creationTime,referenceName,nickname,COMM_TAGS,usefulVoteCount,replyCount FROM EDI.EDI_N_PROD_COMMS nc WHERE nc.PT_DATE >= '$cur_date' and not exists (select 1 from EDI.EDI_M_PROD_COMMS mc where mc.id = nc.id);"
+		echo "4.INFO:EDI_N_PROD_COMMS 2 EDI_M_PROD_COMMS.pt >= $cur_date running..."
+		hive -S -e "INSERT INTO TABLE EDI.EDI_M_PROD_COMMS PARTITION(pt_date='$cur_date') SELECT distinct '$cur_date',id,'NULL',referenceId,content,creationTime,referenceName,nickname,COMM_TAGS,usefulVoteCount,replyCount FROM EDI.EDI_N_PROD_COMMS nc WHERE nc.PT_DATE >= '$cur_date' and not exists (select 1 from EDI.EDI_M_PROD_COMMS mc where mc.id = nc.id);"
 
 		ecode=$?
 		if [ $ecode -ne 0 ];then
@@ -58,14 +58,18 @@ else
 	fi
 
 	echo "7.INFO:local file to hive."
-	sed -i 's/^\t//' $newdir/product/part-r-00000
-	hive -S -e "LOAD DATA LOCAL INPATH '$newdir/product/part-r-00000' INTO TABLE EDI.EDI_M_PROD_INFO PARTITION (PT_DATE='$cur_date');"
+	#sed -i 's/^\t//' $newdir/product/part-r-00000
+	hive -S -e "LOAD DATA LOCAL INPATH '$newdir/product/part-r-00000' INTO TABLE EDI.EDI_N_PROD_INFO PARTITION (PT_DATE='$cur_date');"
 	ecode=$?
 	if [ $ecode -ne 0 ];then
         	echo "ERROR:import new file to hive failed.exit $ecode"
 	else
-		echo "INFO:update prod_params..."
-		../prod_params/edi_hive_update_prod_params.sh $cur_date
+		echo "8.INFO:prod_info new to normal."
+		hive -S -e "USE edi;INSERT INTO TABLE EDI_M_PROD_INFO PARTITION(PT_DATE='$cur_date') SELECT CRAWL_DATE, SOURCE, PROD_ID, NAME, PRICE, BRAND, MODEL, COLOR, COMM_AMOUNT, COMM_GOOD_AMOUNT, COMM_MIDDLE_AMOUNT, COMM_BAD_AMOUNT, HOT_TAGS, PARAMS FROM EDI_N_PROD_INFO I WHERE NOT EXISTS (SELECT 1 FROM EDI_M_PROD_INFO MI WHERE MI.PROD_ID=I.PROD_ID) AND I.PT_DATE='$cur_date';"
+		echo "9.INFO:update prod_info of mysql..."
+		sh ./sqoop_to_mysql.sh m_prod_info -add $cur_date
+		echo "10.INFO:update prod_params..."
+		sh ../prod_params/edi_hive_parse_prod_params.sh $cur_date
 	fi
 
 fi

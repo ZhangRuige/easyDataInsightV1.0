@@ -14,7 +14,7 @@ fi
 #filepath=$(cd "$(dirname "$0")"; pwd)
 cd "$(dirname "$0")"
 
-#hive -S -e "use edi;add file ./prod_params_prase.py;insert overwrite table edi_m_prod_params select transform(concat(A.prod_id,'\t',A.params)) USING 'prod_params_prase.py' as a,b,c from (select * from edi_m_prod_info where pt_date='$1') A;"
+hive -S -e "use edi;add file ./prod_params_prase.py;insert overwrite table edi_m_prod_params select transform(concat(A.prod_id,'\t',A.params)) USING 'prod_params_prase.py' as a,b,c from (select * from edi_m_prod_info where pt_date='$1') A;"
 ecode=$?
 if [ $ecode -ne 0 ];then
        	echo "ERROR:$0 ,error code=$ecode"

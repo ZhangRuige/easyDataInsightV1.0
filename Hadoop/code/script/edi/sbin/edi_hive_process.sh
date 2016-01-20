@@ -10,29 +10,30 @@ echo "running ..."
 
 cd /opt/running/edi/sbin/
 
-#1.hdfs to hive
-echo "INFO:from source to local."
+echo "INFO:1.exec edi_new_in_hive.sh."
 ./edi_new_in_hive.sh  #skip if there is not new file
 if [ $? -ne 0 ];then
 	echo "INFO:there is not new file named part-r-00000 .exit 0."
 	exit 0
 fi
 
-#2.edi_hive_do_op.sh 4 after the last do_op pt
-echo "INFO:do op."
+echo "INFO:2.exec edi_hive_do_op.sh"
 ./edi_hive_do_op.sh
 
-#3.edi_hive_do_count_op.sh
-echo "INFO:do op count."
+echo "INFO:3.exec edi_hive_do_count_op.sh"
 ./edi_hive_do_count_op.sh
 
-#4.edi_hive_do_mention.sh
-echo "INFO:do model mention."
+echo "INFO:4.exec edi_hive_do_mention.sh"
 ../mention/edi_hive_mention_process.sh
 
-#5.edi_hive_to_mysql.sh
-echo "INFO:hive to mysql."
+echo "INFO:5.exec edi_hive_to_mysql.sh"
 ./edi_hive_to_mysql_pt.sh
+
+echo "INFO:6.exec edi_hive_update_brand_model.sh."
+./edi_hive_update_brand_model.sh
+
+echo "INFO:7.exec edi_update_consumer_dist.sh"
+./edi_update_consumer_dist.sh
 
 
 echo "time cost(s) :$(( $(date +%s) - $start_time ))"

@@ -87,7 +87,7 @@
 	</target>
 
 	<target name="make-jar" depends="compile" description="make jar file">
-		<jar jarfile="dist/com.zhongyitech.edi.hadoop-1.1.jar">
+		<jar jarfile="dist/com.zhongyitech.edi.hive.udf.donlp-1.1.jar">
 			<fileset dir="${build.path}">
 
 				<!--除去test文件-->
