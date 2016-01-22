@@ -1,4 +1,4 @@
-﻿#!/bin/sh
+#!/bin/sh
 
 echo "############################# 0.init #############################"
 RUNNING_EDI='hadoop@hadoopnamenode'		#edi
