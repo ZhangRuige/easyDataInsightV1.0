@@ -1,17 +1,13 @@
-﻿#!/bin/bash
-##
-# 本脚本用来对已经构建编译成功的文件的部署，在完后edi所有编译打包后被执行。
-# 本脚步只负责将指定的文件或目录copy到指定目标位置，不负责对被复制文件的检验。
-##
+﻿#!/bin/sh
 
 echo "############################# 0.init #############################"
 RUNNING_EDI='hadoop@hadoopnamenode'		#edi
-RUNNING_SPD='hadoop@crawljd'			#edi 部署路径
+RUNNING_SPD='hadoop@crawljd'			#edi deploy host
 HADOOPMYSQL='hadoop@hadoopmysql'
 
 JENKINS_EDI_WD=/var/lib/jenkins/workspace/edi/default		#edi
 JENKINS_SPD_WD=/var/lib/jenkins/workspace/edi_crawl/default	#spider
-RUNNING_EDI_DIR=$RUNNING_EDI:/opt/running/edi				#edi 部署路径
+RUNNING_EDI_DIR=$RUNNING_EDI:/opt/running/edi				#edi deploy
 
 echo "############################# 1.deploy edi(Hadoop,NLP) #############################"
 cd $JENKINS_EDI_WD
