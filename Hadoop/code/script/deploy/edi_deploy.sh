@@ -3,7 +3,7 @@
 echo "############################# 0.init #############################"
 RUNNING_EDI='hadoop@hadoopnamenode'		#edi
 RUNNING_SPD='hadoop@crawljd'			#edi deploy host
-HADOOPMYSQL='hadoop@hadoopmysql'
+hadoopmysql='hadoop@hadoopmysql'
 
 JENKINS_EDI_WD=/var/lib/jenkins/workspace/edi/default		#edi
 JENKINS_SPD_WD=/var/lib/jenkins/workspace/edi_crawl/default	#spider
@@ -26,8 +26,8 @@ scp -r Hadoop/code/edi_hadoop_common/dist/*.jar $RUNNING_EDI_DIR/op/lib/
 scp -r NLP/code/edi_nlp_common/dist/*.jar $RUNNING_EDI_DIR/op/lib/
 
 echo "#3) Mysql data backup script overwrite..."
-scp -r Hadoop/code/script/db_bk $HADOOPMYSQL:./
-ssh $HADOOPMYSQL chmod -R +x ./db_bk
+scp -r Hadoop/code/script/db_bk $hadoopmysql:./
+ssh $hadoopmysql chmod -R +x ./db_bk
 
 echo "############################# 2.deploy spider #############################"
 echo "#1) nutch-crawl overwrite..."

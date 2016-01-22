@@ -23,7 +23,7 @@ fi
 
 
 echo "1.TRUNCATE mysql edi.M_CONSUMER_DIST."
-mysql -h HadoopMySQL -u edi -pedi@zy11 -e "use edi;delete from edi.m_consumer_dist;"
+mysql -h hadoopmysql -u edi -pedi@zy11 -e "use edi;delete from edi.m_consumer_dist;"
 if [ $? -ne 0 ];then
 	echo "ERROR:DELETE FROM edi.m_consumer_dist; exit"
 	exit 1
@@ -32,7 +32,7 @@ fi
 echo "2,overwrite EDI_M_CONSUMER_DIST to mysql..."
 file="/user/hive/warehouse/edi.db/edi_m_consumer_dist/"
 echo "INFO:export file:$file"
-sqoop export --connect 'jdbc:mysql://HadoopMySQL/edi?useUnicode=true&characterEncoding=utf-8' --table 'm_consumer_dist' --username edi --password edi@zy11 --export-dir $file --input-fields-terminated-by '\t' --input-null-string NULL --input-null-non-string NULL 
+sqoop export --connect 'jdbc:mysql://hadoopmysql/edi?useUnicode=true&characterEncoding=utf-8' --table 'm_consumer_dist' --username edi --password edi@zy11 --export-dir $file --input-fields-terminated-by '\t' --input-null-string NULL --input-null-non-string NULL 
 ecode=$?
 echo "INFO:sqoop exit code=$ecode"
 if [ $ecode -ne 0 ];then

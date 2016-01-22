@@ -11,7 +11,7 @@ if [ $# -lt 2 ];then
 	tablename : lowercase mysql table name,must has a table named edi_$table in hive;"
 fi
 
-#mysql_url='jdbc:mysql://HadoopMySQL/edi?useUnicode=true&characterEncoding=utf-8'
+#mysql_url='jdbc:mysql://hadoopmysql/edi?useUnicode=true&characterEncoding=utf-8'
 #hmsl='177374746095048029837425627581083108134044272033849682643281162P18'       #name hive --password hive
 #msl='8272367958314031600942076814602P8272'      #hive -p hive
 
@@ -24,7 +24,7 @@ partition=$3
 
 if [ "$action" = "-overwrite" ];then
 	echo "$0 INFO:truncate mysql table $table."
-	mysql -h HadoopMySQL -u $param_a -p$param_b -e "use edi;delete from $table ;"
+	mysql -h hadoopmysql -u $param_a -p$param_b -e "use edi;delete from $table ;"
 	if [ "$partition" = "" ];then
 		file=/user/hive/warehouse/edi.db/edi_$table
 	else
@@ -47,7 +47,7 @@ elif [ "$action" = "-partition" ];then
 fi
 
 echo "$0 INFO:export file:$file"
-sqoop export --connect "jdbc:mysql://HadoopMySQL/edi?useUnicode=true&characterEncoding=utf-8" \
+sqoop export --connect "jdbc:mysql://hadoopmysql/edi?useUnicode=true&characterEncoding=utf-8" \
 	     --table "$t_table" --username $param_a --password $param_b --export-dir $file --input-fields-terminated-by '\t' \
 	     --mapreduce-job-name "export hive table $t_table to mysql" -m 1 \
 	     --input-null-string NULL --input-null-non-string NULL 
@@ -58,7 +58,7 @@ fi
 
 
 if [ "$table" != "$t_table" ];then
-	mysql -h HadoopMySQL -u $param_a -p$param_b -e "USE edi;INSERT INTO $table SELECT T.*,'$partition' AS CREATED_DT FROM $t_table T;TRUNCATE TABLE $t_table;"
+	mysql -h hadoopmysql -u $param_a -p$param_b -e "USE edi;INSERT INTO $table SELECT T.*,'$partition' AS CREATED_DT FROM $t_table T;TRUNCATE TABLE $t_table;"
 fi
 
 echo "$0 DONE. spend time(s) :"$(( $(date +%s) - $start_time ))

@@ -14,13 +14,13 @@ echo "1.INFO:copy comment from source to local."
 fromdir=/home/hadoop/output/
 newdir=/opt/running/edi/data/new/
 
-scp hadoop@CRAWL_JD:$fromdir/Comm/part-r-00000 $newdir/comment/
+scp hadoop@crawljd:$fromdir/Comm/part-r-00000 $newdir/comment/
 #skip if there is not new file
 if [ $? -ne 0 ];then
         echo "WARNING:there is not new file named part-r-00000 .skip to next."
 else
 	echo "2.INFO:source file rename."
-	ssh hadoop@CRAWL_JD mv "$fromdir/Comm" "$fromdir/comments_bk/Comm-$cur_date"
+	ssh hadoop@crawljd mv "$fromdir/Comm" "$fromdir/comments_bk/Comm-$cur_date"
 	if [ $? -ne 0 ];then
 		echo "ERROR:remote part-r-00000 rename failed."
 	fi
@@ -46,15 +46,15 @@ fi
 echo "time cost(s) :$(( $(date +%s) - $start_time ))"
 
 echo "5.INFO:copy product from source to local"
-scp hadoop@CRAWL_JD:$fromdir/Pro/part-r-00000 $newdir/product/
+scp hadoop@crawljd:$fromdir/Pro/part-r-00000 $newdir/product/
 #skip if there is not new file
 if [ $? -ne 0 ];then
         echo "WARNING:there is not new file named part-r-00000 .exit 1."
 else
 	echo "6.INFO:product source file rename."
-	ssh hadoop@CRAWL_JD mv "$fromdir/Pro" "$fromdir/products_bk/Pro-$cur_date"
+	ssh hadoop@crawljd mv "$fromdir/Pro" "$fromdir/products_bk/Pro-$cur_date"
 	if [ $? -ne 0 ];then
-        	echo "WARNING:HadoopMySQL:remote part-r-00000 rename failed."
+        	echo "WARNING:hadoopmysql:remote part-r-00000 rename failed."
 	fi
 
 	echo "7.INFO:local file to hive."
