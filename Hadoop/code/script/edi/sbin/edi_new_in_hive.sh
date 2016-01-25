@@ -11,8 +11,8 @@ cd /opt/running/edi/sbin/
 #1.hdfs to hive
 
 echo "1.INFO:copy comment from source to local."
-fromdir=/home/hadoop/output/
-newdir=/opt/running/edi/data/new/
+fromdir=/home/hadoop/output
+newdir=/opt/running/edi/data/new
 
 scp hadoop@crawljd:$fromdir/Comm/part-r-00000 $newdir/comment/
 #skip if there is not new file
@@ -27,7 +27,7 @@ else
 
 	echo "3.INFO:local file to hive."
 	#sed -i 's/^\t//' $newdir/comment/part-r-00000
-	hive -S -e "LOAD DATA LOCAL INPATH '$newdir/comment/part-r-00000' INTO TABLE EDI.EDI_N_PROD_COMMS partitions(pt_date='$cur_date');"
+	hive -S -e "LOAD DATA LOCAL INPATH '$newdir/comment/part-r-00000' INTO TABLE EDI.EDI_N_PROD_COMMS partition (pt_date='$cur_date');"
 	ecode=$?
 	if [ $ecode -ne 0 ];then
 		echo "ERROR:import new file to hive failed.exit $ecode"
