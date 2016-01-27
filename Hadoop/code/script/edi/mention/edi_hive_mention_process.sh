@@ -2,6 +2,8 @@
 echo "START.$0"
 start_time=$(date +%s)
 
+cd "$(dirname "$0")"
+
 ./edi_hive_do_mention.sh
 
 ./edi_hive_transfer_mention.sh

@@ -23,7 +23,7 @@ fi
 
 
 echo "1.TRUNCATE mysql edi.M_CONSUMER_DIST."
-mysql -h hadoopmysql -u edi -pedi@zy11 -e "use edi;delete from edi.m_consumer_dist;"
+ssh hadoopmysql 'mysql -u edi -pedi@zy11 -e "use edi;delete from edi.m_consumer_dist;"'
 if [ $? -ne 0 ];then
 	echo "ERROR:DELETE FROM edi.m_consumer_dist; exit"
 	exit 1

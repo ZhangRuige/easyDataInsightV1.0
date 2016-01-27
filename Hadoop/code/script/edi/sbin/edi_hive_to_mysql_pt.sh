@@ -26,10 +26,10 @@ do
 
 	#>>>2.get all partitions which need to export	
 	if [ -z $export_pt ];then	#-z str empty
-		folders=`hdfs dfs -ls /user/hive/warehouse/edi.db/edi_\`echo $table|tr A-Z a-z\`|grep pt_date|cut -f2 -d '='`
+		folders=`hdfs dfs -ls /user/hive/warehouse/edi.db/edi_$(echo $table|tr A-Z a-z)|grep pt_date|cut -f2 -d '='`
 	else
 		awk_fun='{if( '$export_pt' < $1){ print $1}}'
-		folders=`hdfs dfs -ls /user/hive/warehouse/edi.db/edi_\`echo $table|tr A-Z a-z\`|grep pt_date|cut -f2 -d '=' | awk "$awk_fun"`
+		folders=`hdfs dfs -ls /user/hive/warehouse/edi.db/edi_$(echo $table|tr A-Z a-z)|grep pt_date|cut -f2 -d '=' | awk "$awk_fun"`
 	fi
 	echo "INFO:folders=$folders"
 	

@@ -24,7 +24,7 @@ partition=$3
 
 if [ "$action" = "-overwrite" ];then
 	echo "$0 INFO:truncate mysql table $table."
-	mysql -h hadoopmysql -u $param_a -p$param_b -e "use edi;delete from $table ;"
+	ssh hadoopmysql "mysql -u $param_a -p$param_b -e 'use edi;delete from '$table';'"
 	if [ "$partition" = "" ];then
 		file=/user/hive/warehouse/edi.db/edi_$table
 	else
@@ -56,9 +56,9 @@ if [ $ecode -ne 0 ];then
        	echo "$0 ERROR:sqoop error.skip $table ,code=$ecode"
 fi
 
-
+echo "$0 INFO:mysql tmp2normal.table=$table ,t_table=$t_table"
 if [ "$table" != "$t_table" ];then
-	mysql -h hadoopmysql -u $param_a -p$param_b -e "USE edi;INSERT INTO $table SELECT T.*,'$partition' AS CREATED_DT FROM $t_table T;TRUNCATE TABLE $t_table;"
+	ssh hadoopmysql "mysql -u $param_a -p$param_b -e 'use edi;insert into $table select t.*,'$partition' as created_dt from '$t_table' t;truncate table '$t_table';'"
 fi
 
 echo "$0 DONE. spend time(s) :"$(( $(date +%s) - $start_time ))

@@ -1,5 +1,5 @@
 #!/bin/bash
-cd /opt/running/edi/op
+
 echo "START.$0"
 start_time=$(date +%s)
 cur_date=`date +%Y%m%d%H%M%S`
@@ -19,12 +19,14 @@ if [ "x$last_do_pt" != "x" ];then
 	condition=" WHERE B.PT_DATE > '$last_do_pt'"
 fi
 
+cd ../op	#important!!!
+
 hive -S -e "use edi;
-add jars /opt/running/edi/op/lib/ansj_seg-2.0.8.jar
-/opt/running/edi/op/lib/nlp-lang-1.0.jar
-/opt/running/edi/op/lib/word2vec.jar
-/opt/running/edi/op/lib/com.zhongyitech.edi.NLP.omsa-v1.25.jar
-/opt/running/edi/op/lib/com.zhongyitech.edi.hive.udf.donlp-1.1.jar;
+add jars lib/ansj_seg-2.0.8.jar
+lib/nlp-lang-1.0.jar
+lib/word2vec.jar
+lib/com.zhongyitech.edi.NLP.omsa-v1.25.jar
+lib/com.zhongyitech.edi.hive.udf.donlp-1.1.jar;
 create temporary function MENTION_UDF as 'com.zhongyitech.edi.hive.udf.MentionUDF';
 SELECT  A.ARR[0] AS CID,
     A.ARR[1] AS BRAND,
