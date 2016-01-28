@@ -42,4 +42,3 @@ tar -cf ~/ParseCrawl.tar ParseCrawl
 scp ~/ParseCrawl.tar $RUNNING_SPD:./soft/
 ssh $RUNNING_SPD "cd soft;tar -xf ParseCrawl.tar"
 
-

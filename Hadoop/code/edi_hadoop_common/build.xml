@@ -54,6 +54,9 @@
 	<!-- 编译测试文件，初始化目录 -->
 	<!-- =================================================================== -->
 	<target name="compile" depends="init">
+		<!--<chmod file="../script/deploy/edi_deploy.sh" perm="ugo+rx"/>
+		<chmod file="../script/deploy/edi_deploy_start.sh" perm="ugo+rx"/>-->
+		
 		<javac encoding="utf-8" srcdir="${src.path}" destdir="${build.path}" classpathref="compile.path" includeantruntime="true" />
 		<javac encoding="utf-8" srcdir="${test.path}" destdir="${build.path}" classpathref="compile.path" includeantruntime="true" />
 	</target>
@@ -92,7 +95,6 @@
 				<exclude name="**/*Test.class" />
 			</fileset>
 		</jar>
-		<chmod dir="../script/deploy" perm="ugo+x" />
 	</target>
 
 </project>
