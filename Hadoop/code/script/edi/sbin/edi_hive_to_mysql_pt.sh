@@ -2,7 +2,7 @@
 
 start_time=$(date +%s)
 cur_date=`date +%Y%m%d%H%M%S`
-echo ">>>START .$0 AT $cur_date"
+echo ">>>START.$0 AT $cur_date"
 source /etc/profile
 
 #change work dir
@@ -54,10 +54,9 @@ do
 			#>>>update last sync
 			hdfs dfs -rm -r -skipTrash /edi/edi_conf/$table".last_push_mysql=*"
 			hdfs dfs -mkdir -p "/edi/edi_conf/$table"".last_push_mysql=$folder"
-			echo "updating... edi_conf key:$table"".last_push_mysql=$folder"
+			echo "INFO:updating... edi_conf key:$table"".last_push_mysql=$folder"
 		fi
 	done
 done
 
-echo "done!$0"
-echo "spend time(s) :"$(( $(date +%s) - $start_time ))
+echo ">>>$0 DONE.spend time(s) :$(( $(date +%s) - $start_time ))"

@@ -2,10 +2,10 @@
 
 start_time=$(date +%s)
 cur_date=`date +%Y%m%d%H%M%S`
-echo ">>>START .$0 AT $cur_date"
+echo ">>>START.$0 AT $cur_date"
 
 if [ $# -lt 3 ];then
-	echo "$0 USEAGE:$0 tablename [overwrite|add|partition] [partition name] \
+	echo "USEAGE:$0 tablename [overwrite|add|partition] [partition name] \
 	tablename : lowercase mysql table name,must has a table named edi_xxx in hive;"
 fi
 
@@ -23,7 +23,7 @@ PARTITION=$4
 T_TABLE=$TABLE
 
 if [ "$ACTION" = "-overwrite" ];then
-	echo "$0 INFO:truncate mysql table $TABLE."
+	echo "INFO:truncate mysql table $TABLE."
 	ssh $RDB_HOST "mysql -u $PARAM_A -p$PARAM_B -e 'use edi;delete from '$TABLE';'"
 	if [ "$PARTITION" = "" ];then
 		file=/user/hive/warehouse/edi.db/edi_$TABLE
@@ -39,14 +39,14 @@ elif [ "$ACTION" = "-add" ];then
 	fi
 elif [ "$ACTION" = "-partition" ];then
 	if [ "$PARTITION" = "" ];then
-		echo "$0 INFO:please input partition name."
+		echo "INFO:please input partition name."
 		exit 0
 	fi
 	file=/user/hive/warehouse/edi.db/edi_"$TABLE"/pt_date=$PARTITION
 	T_TABLE=t_$TABLE
 fi
 
-echo "$0 INFO:export file:$file"
+echo "INFO:export file:$file"
 sqoop export --connect "jdbc:mysql://$RDB_HOST/edi?useUnicode=true&characterEncoding=utf-8" \
 	    --table "$T_TABLE" --username $PARAM_A --password $PARAM_B \
 	    --export-dir $file --input-fields-terminated-by '\t' \
@@ -54,13 +54,13 @@ sqoop export --connect "jdbc:mysql://$RDB_HOST/edi?useUnicode=true&characterEnco
 	    --input-null-string NULL --input-null-non-string NULL 
 ecode=$?
 if [ $ecode -ne 0 ];then
-	echo "$0 ERROR:sqoop error.skip $TABLE ,code=$ecode"
+	echo "ERROR:sqoop error.skip $TABLE ,code=$ecode"
 fi
 
-echo "$0 INFO:mysql tmp2normal.TABLE=$TABLE ,T_TABLE=$T_TABLE"
+echo "INFO:mysql tmp2normal.TABLE=$TABLE ,T_TABLE=$T_TABLE"
 if [ "$TABLE" != "$T_TABLE" ];then
 	ssh $RDB_HOST "mysql -u $PARAM_A -p$PARAM_B -e 'use edi;insert into $TABLE select t.*,'$PARTITION' as created_dt from '$T_TABLE' t;truncate table '$T_TABLE';'"
 fi
 
-echo "$0 DONE. spend time(s) :"$(( $(date +%s) - $start_time ))
+echo ">>>$0 DONE.spend time(s) :$(( $(date +%s) - $start_time ))"
 

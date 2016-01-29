@@ -2,7 +2,7 @@
 
 start_time=$(date +%s)
 cur_date=`date +%Y%m%d%H%M%S`
-echo ">>>START .$0 AT $cur_date"
+echo ">>>START.$0 AT $cur_date"
 source /etc/profile
 
 cd /opt/running/edi/op
@@ -11,9 +11,9 @@ tmp_file=tmp/edi_r_comm_tag_"$cur_date".td
 
 #>>>1.get the last partition
 last_donlp_pt=`hdfs dfs -ls /edi/edi_conf |grep 'last_donlp_pt' |tail -n 1|cut -f2 -d '='`
-echo "last_donlp_pt=$last_donlp_pt"
+echo "INFO:last_donlp_pt=$last_donlp_pt"
 
-echo "run export ..."
+echo "INFO:run export ..."
 
 #if [ "$1"x = "distinct"x ];then
 #	hql="(SELECT * FROM (SELECT *,ROW_NUMBER() OVER(DISTRIBUTE  BY ID SORT BY PT_DATE DESC ) RN  FROM EDI_M_PROD_COMMS) T WHERE T.RN=1)"
@@ -52,16 +52,16 @@ FROM (
 
 ecode=$?
 if [ $ecode -ne 0 ];then
-	echo "hiveQL exec failed.exit $ecode"
+	echo "ERROR:hiveQL exec failed.exit $ecode"
 	exit $ecode
 fi
 
 if [ ! -s $tmp_file ];then  #string length is zero
-	echo "0 records.exit."
+	echo "WARNNING:0 records.exit."
 	exit 1
 fi
 
-echo "run import ..."
+echo "INFO:run import ..."
 hive -e "use edi;LOAD DATA LOCAL INPATH '$tmp_file' INTO TABLE EDI_R_COMM_TAG PARTITION (PT_DATE='$cur_date');"
 #hive -S -e "use edi;LOAD DATA LOCAL INPATH '$tmp_file' INTO TABLE EDI_R_COMM_TAG PARTITION (PT_DATE='$cur_date');"
 ecode=$?
@@ -74,8 +74,7 @@ if [ $ecode -ne 0 ];then
 else
 	hdfs dfs -rm -r -skipTrash /edi/edi_conf/last_donlp_pt=*
 	hdfs dfs -mkdir -p /edi/edi_conf/last_donlp_pt=$cur_date
-	echo "updating... edi_conf key:last_donlp_pt=$cur_date"
+	echo "INFO:updating... edi_conf key:last_donlp_pt=$cur_date"
 fi
 
-echo "END.$0"
-echo "spend time(s) :$(( $(date +%s) - $start_time ))"
+echo ">>>$0 DONE.spend time(s) :$(( $(date +%s) - $start_time ))"

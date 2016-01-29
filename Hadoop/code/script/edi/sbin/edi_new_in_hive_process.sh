@@ -18,6 +18,4 @@ do
 	#skip if there is not new file
 done
 
-echo "time cost(s) :$(( $(date +%s) - $start_time ))"
-echo ">>>DONE.$0"
-
+echo ">>>$0 DONE.spend time(s) :$(( $(date +%s) - $start_time ))"

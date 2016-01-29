@@ -5,17 +5,15 @@ echo ">>>START .$0 AT $cur_date"
 source /etc/profile
 
 if [ -z $1 ];then
-	echo "*****Input the necessary parameters: pt_date"
-        exit
+	echo "USAGE:$0 pt_date."
+	exit 0
 fi
 
 pt_date=$1
 
-source /etc/profile
 cd /opt/running/edi/op
 tmp_file=tmp/edi_new_prod_info_"$cur_date".td
 
-echo "running ..."
 echo "INFO:update dictionary of title2model"
 hive -S -e "USE EDI;INSERT OVERWRITE LOCAL DIRECTORY '/opt/running/edi/tmp/brand_models_$pt_date' ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' LINES TERMINATED BY '\n' select brand,collect_list(model) from edi_m_brand_model where brand!=model group by brand;"
 
@@ -36,13 +34,13 @@ if [ $ecode -ne 0 ];then
 fi
 
 if [ ! -s $tmp_file ];then  #string length is zero
-        echo "0 records.exit."
+        echo "WARNNING:0 records.exit."
         exit 1
 fi
 
-echo "run import ..."
+echo "INFO:run import ..."
 hive -S -e "use edi;LOAD DATA LOCAL INPATH '$tmp_file' OVERWRITE INTO TABLE edi_m_prod_info PARTITION (PT_DATE='$pt_date');"
 rm tmp/edi_new_prod_info_"$cur_date".td
 
 
-echo 'spend time(s) :'$(( $(date +%s) - $start_time ))
+echo ">>>$0 DONE.spend time(s) :$(( $(date +%s) - $start_time ))"

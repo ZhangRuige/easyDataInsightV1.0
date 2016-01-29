@@ -102,4 +102,4 @@ echo "time cost(s) :$(( $(date +%s) - $start_time ))"
 echo ">>>------------------------------------------->" >> log/edi_nkw_do_train.log
 hdfs dfs -cat "/edi/nkw/tmp/train_$cur_date/*" >> log/edi_nkw_do_train.log 
 
-
+echo ">>>$0 DONE.spend time(s) :$(( $(date +%s) - $start_time ))"

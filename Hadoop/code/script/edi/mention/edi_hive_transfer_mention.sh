@@ -7,8 +7,7 @@ cd /opt/running/edi/op
 
 #>>>1.get the last partition
 last_do_pt=`hdfs dfs -ls /edi/edi_conf |grep 'last_transfer_mention_pt' |tail -n 1|cut -f2 -d '='`
-echo "last_do_pt=$last_do_pt"
-echo "run export ..."
+echo "INFO:last_do_pt=$last_do_pt .run export ... "
 
 condition=""
 if [ "$last_do_pt" != "" ];then
@@ -34,8 +33,7 @@ if [ $? -ne 0 ];then
 else
 	hdfs dfs -rm -r /edi/edi_conf/last_transfer_mention_pt=*
 	hdfs dfs -mkdir -p /edi/edi_conf/last_transfer_mention_pt=$cur_date
-	echo "updating... edi_conf key:last_transfer_mention_pt=$cur_date"
+	echo "INFO:updating... edi_conf key:last_transfer_mention_pt=$cur_date"
 fi
 
-echo "END.$0"
-echo "spend time(s) :$(( $(date +%s) - $start_time ))"
+echo ">>>$0 DONE.spend time(s) :$(( $(date +%s) - $start_time ))"

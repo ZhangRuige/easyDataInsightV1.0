@@ -9,9 +9,7 @@ tmp_file=tmp/edi_r_comm_mention_"$cur_date".td
 
 #>>>1.get the last partition
 last_do_pt=`hdfs dfs -ls /edi/edi_conf |grep 'last_do_mention_pt' |tail -n 1|cut -f2 -d '='`
-echo "last_do_pt=$last_do_pt"
-
-echo "run export ..."
+echo "INFO:last_do_pt=$last_do_pt .run export ..."
 
 condition=""
 if [ "x$last_do_pt" != "x" ];then
@@ -37,16 +35,16 @@ FROM (
 
 ecode=$?
 if [ $ecode -ne 0 ];then
-	echo "hiveQL exec failed.exit $ecode"
+	echo "ERROR:hiveQL exec failed.exit $ecode"
 	exit $ecode
 fi
 
 if [ ! -s $tmp_file ];then  #string length is zero
-	echo "0 records.exit."
+	echo "INFO:0 records.exit."
 	exit 1
 fi
 
-echo "run import ..."
+echo "INFO:run import ..."
 hive -e "LOAD DATA LOCAL INPATH '$tmp_file' INTO TABLE EDI.EDI_R_COMM_MENTION PARTITION (PT_DATE='$cur_date');"
 ecode=$?
 if [ $ecode -ne 0 ];then
@@ -55,12 +53,9 @@ if [ $ecode -ne 0 ];then
 else
 	hdfs dfs -rm -r /edi/edi_conf/last_do_mention_pt=*
 	hdfs dfs -mkdir -p /edi/edi_conf/last_do_mention_pt=$cur_date
-	echo "updating... edi_conf key:last_do_mention_pt=$cur_date"
+	echo "INFO:updating... edi_conf key:last_do_mention_pt=$cur_date"
 	
 	rm $tmp_file
 fi
 
-
-
-echo "END.$0"
-echo "spend time(s) :$(( $(date +%s) - $start_time ))"
+echo ">>>$0 DONE.spend time(s) :$(( $(date +%s) - $start_time ))"

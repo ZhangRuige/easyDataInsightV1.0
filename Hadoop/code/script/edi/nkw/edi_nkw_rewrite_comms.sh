@@ -25,7 +25,7 @@ rm -rf $export_dir/*
 
 #>>>1.get the last partition
 last_train_rewrite_pt=`hdfs dfs -ls /edi/edi_conf | grep last_train_rewrite_pt | tail -n 1 | cut -f2 -d '='`
-echo "last_train_rewrite_pt($?)=$last_train_rewrite_pt"
+echo "INFO:last_train_rewrite_pt($?)=$last_train_rewrite_pt"
 condition=""
 if [ "$last_train_rewrite_pt" != "" ];then
         condition=" WHERE PT_DATE > '$last_train_rewrite_pt'"
@@ -46,7 +46,6 @@ fi
 
 echo "time cost(s) :$(( $(date +%s) - $start_time ))"
 
-
 #echo "INFO:java -classpath com.xxx.jar CRFsUtil $1 $2"
 rm -r $tmp_dir/.*
 
@@ -61,15 +60,13 @@ else
 	echo "INFO:output file count:$fc"
 	if [ $fc -lt 5 ];then
 		echo "ERROR:output block files count is $fc ,less than 5,give up and delay to next time process.exit with -1"
-		echo "time cost(s) :$(( $(date +%s) - $start_time ))"
+		echo "INFO:time cost(s) :$(( $(date +%s) - $start_time ))"
 		exit -1
 	else
 		hdfs dfs -rm -r -skipTrash /edi/edi_conf/last_train_rewrite_pt=*
 		hdfs dfs -mkdir -p /edi/edi_conf/last_train_rewrite_pt=$cur_date
-		echo "updating... edi_conf key:last_train_rewrite_pt=$cur_date"
+		echo "INFO:updating... edi_conf key:last_train_rewrite_pt=$cur_date"
 	fi
 fi
 
-
-echo "DONE.$0"
-echo "time cost(s) :$(( $(date +%s) - $start_time ))"
+echo ">>>$0 DONE.spend time(s) :$(( $(date +%s) - $start_time ))"

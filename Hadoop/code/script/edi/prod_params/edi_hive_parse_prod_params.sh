@@ -2,7 +2,7 @@
 
 start_time=$(date +%s)
 cur_date=`date +%Y%m%d%H%M%S`
-echo ">>>START .$0 AT $cur_date"
+echo ">>>START.$0 AT $cur_date"
 source /etc/profile
 
 if [ $# -lt 1 ];then
@@ -21,6 +21,5 @@ else
 	sh ../sbin/sqoop_to_mysql.sh m_prod_params -overwrite	#optimize
 fi
 
-echo "time cost(s) :$(( $(date +%s) - $start_time ))"
-echo ">>>DONE.$0"
+echo ">>>$0 DONE.spend time(s) :$(( $(date +%s) - $start_time ))"
 
