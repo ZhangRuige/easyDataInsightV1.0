@@ -2,13 +2,13 @@
 
 start_time=$(date +%s)
 cur_date=`date +%Y%m%d%H%M%S`
-echo ">>>START .$0 AT $cur_date"
+echo ">>>START $0 AT $cur_date"
 
 cd /opt/running/edi/sbin/
 
-if [ $# -ne 2 ];then
-	echo "USEAGE:$0 CRAWL_HOST\
-	CRAWL_HOST : the crawl host need to import to hive. eg:192.168.0.118 or crawl_jd."
+if [ $# -ne 1 ];then
+	echo "Usage:$0 crawl_host"
+	echo "	crawl_host:the crawl host need to import to hive. eg:192.168.0.118 or crawl_jd."
 	exit 1;
 fi
 CRAWL_HOST=$1
@@ -58,7 +58,7 @@ else
 	echo "INFO:6.product source file rename."
 	ssh hadoop@$CRAWL_HOST mv "$fromdir/Pro" "$fromdir/products_bk/Pro-$cur_date"
 	if [ $? -ne 0 ];then
-		echo "WARNING:hadoopmysql:remote part-r-00000 rename failed."
+		echo "WARNING:remote rename part-r-00000 failed."
 	fi
 
 	echo "INFO:7.local file to hive."

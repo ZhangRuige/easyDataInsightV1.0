@@ -2,11 +2,16 @@
 
 start_time=$(date +%s)
 cur_date=`date +%Y%m%d%H%M%S`
-echo ">>>START.$0 AT $cur_date"
+echo ">>>START $0 AT $cur_date"
 
-if [ $# -lt 3 ];then
-	echo "USEAGE:$0 tablename [overwrite|add|partition] [partition name] \
-	tablename : lowercase mysql table name,must has a table named edi_xxx in hive;"
+if [ $# -lt 2 ];then
+	echo "Usage:sqoop_to_mysql.sh TABLE_NAME [-overwrite|-add|-partition] [PARTITION_NAME]"
+	echo "	TABLE_NAME	: lowercase mysql table name,must has a table named edi_TABLE_NAME in hive."
+	echo "	-overwrite	: delete all,then sqoop all to RDBMS table."
+	echo "	-add		: append all."
+	echo "	-partition	: sqoop a specified partition ."
+	echo "	PARTITION_NAME	: specified partition value."
+	echo ""
 fi
 
 #mysql_url='jdbc:mysql://hadoopmysql/edi?useUnicode=true&characterEncoding=utf-8'
@@ -15,12 +20,16 @@ fi
 
 PARAM_A=edi
 PARAM_B=edi@zy11
-RDB_HOST=$1
-TABLE=`echo "$2" |tr A-Z a-z`
-ACTION=$3
-PARTITION=$4
+TABLE=`echo "$1" |tr A-Z a-z`
+ACTION=$2
+PARTITION=$3
 
 T_TABLE=$TABLE
+
+RDB_HOST=`sed '/^EXPORT_RDBMS_HOST=/!d;s/.*=//' ../etc/edi.conf`
+if [ "" = "$RDB_HOST" ];then
+	RDB_HOST=hadoopmysql	#default
+fi
 
 if [ "$ACTION" = "-overwrite" ];then
 	echo "INFO:truncate mysql table $TABLE."

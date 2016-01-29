@@ -5,11 +5,11 @@
 #3.参数export_dir为输出分块文件的存储路径
 start_time=$(date +%s)
 cur_date=`date +%Y%m%d%H%M%S`
-echo ">>>START .$0 AT $cur_date"
+echo ">>>START $0 AT $cur_date"
 source /etc/profile
 
 if [ $# -ne 1 ] ; then
-	echo "USAGE: $0 export_dir(default export_dir 'data/blocks')"
+	echo "Usage: $0 export_dir(default export_dir 'data/blocks')"
 	#exit 0;
 	export_dir=/opt/running/edi/nkw/data/blocks
 else

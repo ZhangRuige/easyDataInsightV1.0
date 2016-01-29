@@ -1,7 +1,7 @@
 #!/bin/bash
 start_time=$(date +%s)
 cur_date=`date +%Y%m%d%H%M%S`
-echo ">>>START.$0 AT $cur_date"
+echo ">>>START $0 AT $cur_date"
 source /etc/profile
 
 hive -S -e "USE EDI;INSERT OVERWRITE TABLE EDI_M_R_AMOUNT 

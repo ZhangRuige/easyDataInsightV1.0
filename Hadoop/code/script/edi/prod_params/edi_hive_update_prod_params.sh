@@ -6,7 +6,7 @@ echo ">>>START.$0 AT $cur_date"
 source /etc/profile
 
 if [ $# -lt 1 ];then
-	echo "USAGE:$0 prod.pt_date."
+	echo "Usage:$0 prod.pt_date."
 	exit 0
 fi
 

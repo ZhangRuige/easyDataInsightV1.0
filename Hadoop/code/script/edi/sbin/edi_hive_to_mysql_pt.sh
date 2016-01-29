@@ -2,7 +2,7 @@
 
 start_time=$(date +%s)
 cur_date=`date +%Y%m%d%H%M%S`
-echo ">>>START.$0 AT $cur_date"
+echo ">>>START $0 AT $cur_date"
 source /etc/profile
 
 #change work dir
@@ -15,10 +15,6 @@ if [ $? -ne 0 ];then
 	echo "WARNING:path /edi/conf is not exists. have been created."
 fi
 
-EXPORT_RDBMS_HOST=`sed '/^EXPORT_RDBMS_HOST=/!d;s/.*=//' ../etc/edi.conf`
-if [ "" = "$EXPORT_RDBMS_HOST" ];then
-	EXPORT_RDBMS_HOST=hadoopmysql	#default
-fi
 
 #hive2mysql
 echo "INFO:table loop start."
@@ -45,7 +41,7 @@ do
 	do 
 		#>>>do export to temp table in mysql
 		echo "INFO:do sqoop for partition=$folder"
-		sh ../sbin/sqoop_to_mysql.sh $EXPORT_RDBMS_HOST $table -partition $folder
+		sh ../sbin/sqoop_to_mysql.sh $table -partition $folder
 		if [ $? -ne 0 ];then
 			echo "ERROR:sqoop error.skip $table ,code=$?"
 			#continue

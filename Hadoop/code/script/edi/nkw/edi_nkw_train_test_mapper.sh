@@ -2,7 +2,7 @@
 
 start_time=$(date +%s)
 cur_date=`date +%Y%m%d%H%M%S`
-echo ">>>START AT `hostname`.$cur_date"
+echo ">>>START $0 AT `hostname`.$cur_date"
 echo "INFO:mapper running ..."
 source /etc/profile
 

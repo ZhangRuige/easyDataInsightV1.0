@@ -4,7 +4,7 @@
 echo "=============================================="
 start_time=$(date +%s)
 cur_date=`date +%Y%m%d%H%M%S`
-echo ">>>START.$0 AT $cur_date"
+echo ">>>START $0 AT $cur_date"
 source /etc/profile
 
 cd /opt/running/edi/sbin/

@@ -1,11 +1,11 @@
 #!/bin/bash
 start_time=$(date +%s)
 cur_date=`date +%Y%m%d%H%M%S`
-echo ">>>START .$0 AT $cur_date"
+echo ">>>START $0 AT $cur_date"
 source /etc/profile
 
 if [ -z $1 ];then
-	echo "USAGE:$0 pt_date."
+	echo "Usage:$0 pt_date."
 	exit 0
 fi
 

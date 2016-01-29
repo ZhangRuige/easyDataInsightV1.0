@@ -1,7 +1,7 @@
 #!/bin/bash
 start_time=$(date +%s)
 cur_date=`date +%Y%m%d%H%M%S`
-echo ">>>START .$0 AT $cur_date"
+echo ">>>START $0 AT $cur_date"
 source /etc/profile
 
 echo "INFO:0.clear table EDI_M_CONSUMER_DIST & insert new data."
@@ -19,22 +19,11 @@ if [ $ecode -ne 0 ];then
 	exit $ecode
 fi
 
-
-echo "INFO:1.TRUNCATE mysql edi.M_CONSUMER_DIST."
-ssh hadoopmysql 'mysql -u edi -pedi@zy11 -e "use edi;delete from edi.m_consumer_dist;"'
-if [ $? -ne 0 ];then
-	echo "ERROR:DELETE FROM edi.m_consumer_dist; exit"
-	exit 1
-fi 
-
-echo "INFO:2,overwrite EDI_M_CONSUMER_DIST to mysql..."
-file="/user/hive/warehouse/edi.db/edi_m_consumer_dist/"
-echo "INFO:export file:$file"
-sqoop export --connect 'jdbc:mysql://hadoopmysql/edi?useUnicode=true&characterEncoding=utf-8' --table 'm_consumer_dist' --username edi --password edi@zy11 --export-dir $file --input-fields-terminated-by '\t' --input-null-string NULL --input-null-non-string NULL 
+sh sqoop_to_mysql.sh m_consumer_dist -overwrite
 ecode=$?
-echo "INFO:sqoop exit code=$ecode"
 if [ $ecode -ne 0 ];then
-	echo "ERROR:sqoop error.skip $table ,code=$ecode"
+	echo "ERROR:sqoop error.skip m_consumer_dist ,code=$ecode"
+	exit 1
 fi
 
 echo ">>>$0 DONE.spend time(s) :$(( $(date +%s) - $start_time ))"

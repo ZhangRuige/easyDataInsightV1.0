@@ -3,7 +3,7 @@
 #处理一个map任务，输入是blocks中作为测试集的文件名，输出
 start_time=$(date +%s)
 cur_date=`date +%Y%m%d%H%M%S`
-echo ">>>START .$0 AT `hostname` $cur_date"
+echo ">>>START $0 AT `hostname` $cur_date"
 echo "INFO:mapper running ..."
 source /etc/profile
 

@@ -2,7 +2,7 @@
 
 start_time=$(date +%s)
 cur_date=`date +%Y%m%d%H%M%S`
-echo ">>>START .$0 AT $cur_date"
+echo ">>>START $0 AT $cur_date"
 source /etc/profile
 
 echo "INFO:0.clear table EDI_M_BRAND_MODEL & insert new data."
