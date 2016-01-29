@@ -5,14 +5,16 @@ cur_date=`date +%Y%m%d%H%M%S`
 echo ">>>START $0 AT $cur_date"
 
 if [ $# -lt 2 ];then
-	echo "Usage:sqoop_to_mysql.sh TABLE_NAME [-overwrite|-add|-partition] [PARTITION_NAME]"
+	echo "Usage:sqoop_to_mysql.sh TABLE_NAME ACTION [PARTITION_NAME]"
 	echo "	TABLE_NAME	: lowercase mysql table name,must has a table named edi_TABLE_NAME in hive."
-	echo "	-overwrite	: delete all,then sqoop all to RDBMS table."
-	echo "	-add		: append all."
-	echo "	-partition	: sqoop a specified partition ."
-	echo "	PARTITION_NAME	: specified partition value."
+	echo "	ACTION:"
+	echo "		-overwrite	: delete all,then sqoop all to RDBMS table."
+	echo "		-add		: append all."
+	echo "		-partition	: sqoop a specified partition ."
+	echo "	PARTITION_NAME	: Optional, specified partition value or all."
 	echo ""
 fi
+
 
 #mysql_url='jdbc:mysql://hadoopmysql/edi?useUnicode=true&characterEncoding=utf-8'
 #hmsl='177374746095048029837425627581083108134044272033849682643281162P18'       #name hive --password hive
