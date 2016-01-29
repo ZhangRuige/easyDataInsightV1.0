@@ -1,10 +1,9 @@
 #!/bin/bash
-cd /opt/running/edi/op
-echo "START.$0"
 start_time=$(date +%s)
 cur_date=`date +%Y%m%d%H%M%S`
-echo $cur_date
+echo ">>>START .$0 AT $cur_date"
 
+cd /opt/running/edi/op
 
 #>>>1.get the last partition
 last_do_pt=`hdfs dfs -ls /edi/edi_conf |grep 'last_transfer_mention_pt' |tail -n 1|cut -f2 -d '='`

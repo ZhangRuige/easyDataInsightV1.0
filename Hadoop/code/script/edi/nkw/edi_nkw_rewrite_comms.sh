@@ -3,10 +3,9 @@
 #1.hive输出评论及评论对象位置列表到文件
 #2.分词、词性标注、观点对象标注、分块
 #3.参数export_dir为输出分块文件的存储路径
-
-echo "START.$0"
 start_time=$(date +%s)
 cur_date=`date +%Y%m%d%H%M%S`
+echo ">>>START .$0 AT $cur_date"
 source /etc/profile
 
 if [ $# -ne 1 ] ; then

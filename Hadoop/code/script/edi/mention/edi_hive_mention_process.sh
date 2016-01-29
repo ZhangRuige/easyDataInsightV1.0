@@ -1,6 +1,7 @@
 #!/bin/bash
 echo "START.$0"
 start_time=$(date +%s)
+source /etc/profile
 
 cd "$(dirname "$0")"
 

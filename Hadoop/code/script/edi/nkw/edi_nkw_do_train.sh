@@ -2,14 +2,13 @@
 
 #1.数据交叉，为训练提供不同组合的数据
 #2.发起MR
-source /etc/profile
-cd /opt/running/edi/nkw/
-echo "START.$0"
 start_time=$(date +%s)
 cur_date=`date +%Y%m%d%H%M%S`
-echo $cur_date
+echo ">>>START .$0 AT $cur_date"
+source /etc/profile
 
-echo "running ..."
+cd /opt/running/edi/nkw/
+
 echo "INFO:run edi_nkw_rewrite_comms.sh"
 ./edi_nkw_rewrite_comms.sh
 ecode=$?

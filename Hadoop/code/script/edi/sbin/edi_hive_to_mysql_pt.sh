@@ -1,9 +1,8 @@
 #!/bin/bash
 
-cur_dt=`date +%Y%m%d%H%M%S`
-echo ">>>START.$0 at $cur_dt"
 start_time=$(date +%s)
-
+cur_date=`date +%Y%m%d%H%M%S`
+echo ">>>START .$0 AT $cur_date"
 source /etc/profile
 
 #change work dir
@@ -14,6 +13,11 @@ hdfs dfs -test -e /edi/edi_conf
 if [ $? -ne 0 ];then
 	hdfs dfs -mkdir -p /edi/edi_conf
 	echo "WARNING:path /edi/conf is not exists. have been created."
+fi
+
+EXPORT_RDBMS_HOST=`sed '/^EXPORT_RDBMS_HOST=/!d;s/.*=//' ../etc/edi.conf`
+if [ "" = "$EXPORT_RDBMS_HOST" ];then
+	EXPORT_RDBMS_HOST=hadoopmysql	#default
 fi
 
 #hive2mysql
@@ -34,14 +38,14 @@ do
 	echo "INFO:folders=$folders"
 	
 	OLD_IFS="$IFS" 
-	IFS=" " 
+	IFS=" "		#!!!
 	arr=($folders) 
 	IFS="$OLD_IFS" 
 	for folder in ${arr[@]} ### partitions loop start
 	do 
 		#>>>do export to temp table in mysql
-		echo "INFO:do for partition=$folder"
-		sh ../sbin/sqoop_to_mysql.sh "$table" -partition "$folder"
+		echo "INFO:do sqoop for partition=$folder"
+		sh ../sbin/sqoop_to_mysql.sh $EXPORT_RDBMS_HOST $table -partition $folder
 		if [ $? -ne 0 ];then
 			echo "ERROR:sqoop error.skip $table ,code=$?"
 			#continue
@@ -53,7 +57,6 @@ do
 			echo "updating... edi_conf key:$table"".last_push_mysql=$folder"
 		fi
 	done
-	####
 done
 
 echo "done!$0"

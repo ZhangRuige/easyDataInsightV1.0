@@ -5,7 +5,6 @@ start_time=$(date +%s)
 cur_date=`date +%Y%m%d%H%M%S`
 echo $cur_date
 
-
 tmp_file=tmp/edi_r_comm_mention_"$cur_date".td
 
 #>>>1.get the last partition

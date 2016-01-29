@@ -1,17 +1,16 @@
 #!/bin/bash
 
 #处理一个map任务，输入是blocks中作为测试集的文件名，输出
-echo ""
-echo ">>>START .$0"
+echo "=============================================="
 start_time=$(date +%s)
 cur_date=`date +%Y%m%d%H%M%S`
+echo ">>>START .$0 AT $cur_date"
 source /etc/profile
-echo "running ..."
 
 cd /opt/running/edi/sbin/
 
-echo "INFO:1.exec edi_new_in_hive.sh."
-./edi_new_in_hive.sh  #skip if there is not new file
+echo "INFO:1.exec edi_new_in_hive_process.sh."
+./edi_new_in_hive_process.sh  
 if [ $? -ne 0 ];then
 	echo "INFO:there is not new file named part-r-00000 .exit 0."
 	exit 0

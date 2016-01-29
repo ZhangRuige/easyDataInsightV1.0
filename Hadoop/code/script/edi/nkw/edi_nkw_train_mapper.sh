@@ -1,14 +1,13 @@
 #!/bin/bash
 
 #处理一个map任务，输入是blocks中作为测试集的文件名，输出
-
 start_time=$(date +%s)
 cur_date=`date +%Y%m%d%H%M%S`
-echo ">>>START AT `hostname`.$cur_date"
-source /etc/profile
+echo ">>>START .$0 AT `hostname` $cur_date"
 echo "mapper running ..."
+source /etc/profile
 
-read testfile
+read testfile	#!!!
 
 echo "testfile=$testfile"
 

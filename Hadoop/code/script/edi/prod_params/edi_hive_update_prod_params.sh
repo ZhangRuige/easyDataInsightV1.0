@@ -3,7 +3,6 @@
 start_time=$(date +%s)
 cur_date=`date +%Y%m%d%H%M%S`
 echo ">>>START .$0 AT $cur_date"
-echo "running ..."
 source /etc/profile
 
 if [ $# -lt 1 ];then

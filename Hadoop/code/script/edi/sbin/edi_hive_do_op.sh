@@ -1,10 +1,11 @@
 #!/bin/bash
-cd /opt/running/edi/op
-echo "START.$0"
+
 start_time=$(date +%s)
 cur_date=`date +%Y%m%d%H%M%S`
-echo $cur_date
+echo ">>>START .$0 AT $cur_date"
 source /etc/profile
+
+cd /opt/running/edi/op
 
 tmp_file=tmp/edi_r_comm_tag_"$cur_date".td
 

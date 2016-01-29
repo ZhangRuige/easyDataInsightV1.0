@@ -1,9 +1,8 @@
 #!/bin/bash
 start_time=$(date +%s)
-echo "START.$0"
-
 cur_date=`date +%Y%m%d%H%M%S`
-echo $cur_date
+echo ">>>START .$0 AT $cur_date"
+source /etc/profile
 
 if [ -z $1 ];then
 	echo "*****Input the necessary parameters: pt_date"

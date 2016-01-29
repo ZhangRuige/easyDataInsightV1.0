@@ -1,12 +1,8 @@
 #!/bin/bash
 start_time=$(date +%s)
-echo "START.$0"
-
 cur_date=`date +%Y%m%d%H%M%S`
-echo $cur_date
-
+echo ">>>START .$0 AT $cur_date"
 source /etc/profile
-echo "running ..."
 
 hive -S -e "USE EDI;INSERT OVERWRITE TABLE EDI_M_R_AMOUNT 
 SELECT P.BRAND,P.MODEL,R.ASPECT,R.ATTR,sum(case R.CATEGORY when 1 then 1 else 0 end)/count(R.CATEGORY) ,count(R.CATEGORY) 
