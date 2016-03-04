@@ -65,13 +65,12 @@ echo "INFO:run import ..."
 hive -e "use edi;LOAD DATA LOCAL INPATH '$tmp_file' INTO TABLE EDI_R_COMM_TAG PARTITION (PT_DATE='$cur_date');"
 #hive -S -e "use edi;LOAD DATA LOCAL INPATH '$tmp_file' INTO TABLE EDI_R_COMM_TAG PARTITION (PT_DATE='$cur_date');"
 ecode=$?
-rm tmp/edi_r_comm_tag_"$cur_date".td
-
 #>>>update last ptA
 if [ $ecode -ne 0 ];then
 	echo "ERROR:hiveQL exec failed.exit $ecode"
 	exit $ecode
 else
+	rm tmp/edi_r_comm_tag_"$cur_date".td
 	hdfs dfs -rm -r -skipTrash /edi/edi_conf/last_donlp_pt=*
 	hdfs dfs -mkdir -p /edi/edi_conf/last_donlp_pt=$cur_date
 	echo "INFO:updating... edi_conf key:last_donlp_pt=$cur_date"

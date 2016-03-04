@@ -70,7 +70,7 @@ else
 	else
 		echo "INFO:8.prod_info new to normal."
 		hive -S -e "USE edi;INSERT INTO TABLE EDI_M_PROD_INFO PARTITION(PT_DATE='$cur_date') SELECT CRAWL_DATE, SOURCE, PROD_ID, NAME, PRICE, BRAND, MODEL, COLOR, COMM_AMOUNT, COMM_GOOD_AMOUNT, COMM_MIDDLE_AMOUNT, COMM_BAD_AMOUNT, HOT_TAGS, PARAMS FROM EDI_N_PROD_INFO I WHERE NOT EXISTS (SELECT 1 FROM EDI_M_PROD_INFO MI WHERE MI.PROD_ID=I.PROD_ID) AND I.PT_DATE='$cur_date';"
-		echo "INFO:9.update prod_info of mysql..."
+		echo "INFO:9.append new prod_info records to MYSQL table ..."
 		sh ./sqoop_to_mysql.sh m_prod_info -add $cur_date
 		echo "INFO:10.update prod_params..."
 		sh ../prod_params/edi_hive_parse_prod_params.sh $cur_date
